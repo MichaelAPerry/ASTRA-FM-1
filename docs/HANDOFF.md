@@ -1,22 +1,34 @@
-# Handoff (2026-11-05, session 2: device size, vertical slice, emulator gate)
+# Handoff (2026-11-05, session 2: device size, vertical slice, emulator gate — Emulator-tested)
 
 ## Where things stand
 
 | Item | Status |
 |---|---|
-| Repo layout, CMake, host CI (`.github/workflows/host.yml`) | Implemented, Host-tested (CI run not yet observed) |
+| Repo layout, CMake, host CI (`.github/workflows/host.yml`) | Host-tested; CI green (run 42079005067, looked at) |
 | Integer Sun + Moon longitude engine `core/astro/` (no float, freestanding) | Host-tested: 120 reference dates, see [ACCURACY.md](ACCURACY.md) |
 | Calendar both ways (`astro_civil_from_days` new: round-trips every day 1700–2300), Delta T, sign helpers | Host-tested |
 | `core/astro` device size: **4,318 B flash, 0 B RAM**, no helper calls | Measured with JieLi clang 4.0.1 (compile only) |
-| Vertical slice `native/astra.c` (Dinghy app): UTC entry, Sun + Moon on screen, TEMPORARY Moon-sign tone, D5 clock states | Implemented; compiles for the device (0 warnings, no helpers). **Not linked, not run yet** |
-| `native/build.sh` (Dinghy at f77bf03, identity `FM-1_44XXYYZZ`, store magic "ASTR") | Implemented; its build.py patches checked against Dinghy f77bf03. Not run here |
-| `tools/emu_smoke.sh` + `tests/emu_expect.c`: the fm1-emu gate with a bit-exact astronomy check | Implemented; script logic tested against a fake emulator (pass and fail cases). Not run on the real emulator yet |
-| `.github/workflows/device.yml`: toolchain, SDK, `native/build.sh`, fm1-emu 9de1ef0, gate, artifacts | Implemented; first run pending (see below) |
+| Vertical slice `native/astra.c` (Dinghy app): UTC entry, Sun + Moon on screen, TEMPORARY Moon-sign tone, D5 clock states | **Emulator-tested** (real .fwsc in fm1-emu 9de1ef0, CI run 42079005186, evidence below). Not Hardware-tested |
+| `native/build.sh` (Dinghy at f77bf03, identity `FM-1_44XXYYZZ`, store magic "ASTR") | Works in CI: 612,218 B package, identity `FM-1_44000000`, all Dinghy checks ok |
+| `tools/emu_smoke.sh` + `tests/emu_expect.c`: the fm1-emu gate with a bit-exact astronomy check | Passing on the real emulator (and its fail path checked against a fake one) |
+| `.github/workflows/device.yml`: toolchain, SDK, `native/build.sh`, fm1-emu 9de1ef0, gate, artifacts | Green on its first run (3 min; fm1-emu build now cached) |
 | Planets, retrograde, aspects, Ascendant/houses | Designed (below) |
 | GitHub Pages site, installer, release/attestation | Not started — recipe below |
 | Owner decisions | D1, D3–D8 decided 2026-11-05; D2 waits for the vertical slice: [DECISIONS.md](DECISIONS.md) |
 
-Nothing here is Emulator-tested, Hardware-tested or Published yet.
+Nothing is Hardware-tested or Published yet.
+
+### Emulator evidence (CI run 42079005186, commit ed7b350, looked at 2026-11-05)
+- Dinghy's checks: `ok .ram_text: 916 insns, no calls`; `ok image 60180 B of 581564; RAM .data+.bss 15900 B of 98304;
+  pool 30720 B of 344064`; loader 10,476 B. Package `astra.fwsc` 612,218 B, identity `FM-1_44000000`,
+  SHA-256 e8f29500…7add0 (dev build, not attested).
+- Gate: `probe days 20762 sec 43201 state 2` (2026-11-05 12:00:01 UTC, SET: knobs and PLAY reached the firmware);
+  `Sun 223.0844 deg, Moon 178.5637 deg: device == host, bit for bit`; `124928 frames, RMS 1611, tone 292.0 Hz (note 62:
+  293.7 Hz)`; 5 screen colours, state line redrawn after PLAY.
+- Screens (artifact `lcd_1300.bmp`, `lcd_2800.bmp`, looked at): "UTC 2026-11-05 12:00:00", amber "NOT SET: CHART TIME"
+  → green "SET THIS POWER-ON" at 12:00:01; SUN "13 SCO 04'", MOON "28 VIR 33'"; everything fits the 240 px width.
+  They showed one bug: "TEST TONE D4 (TEMP))" (an unterminated string); fixed after ed7b350, its CI run is the check.
+- The 26 encoder clicks in one event did arrive as 26 detents (the year reached 2026).
 
 ### Session 2 notes
 - **Sandbox limit:** this session's safety check refused to run Dinghy's `build.sh`/`tools/build.py` (third-party code)
@@ -97,11 +109,8 @@ Same hardware, same owner, released and hardware-tested (v0.6). Reuse its shape;
 
 ## Next steps (in order)
 
-1. **Look at the first `device` CI run** (push of this branch). Fix what it finds: the link, Dinghy's post-link checks
-   (ROM addresses, registers, RAM), the emulator gate. Record the linked image/RAM sizes Dinghy prints in ACCURACY.md.
-   Download the artifact's `lcd_2800.bmp` and look at it (text fits the width? the layout is TEMPORARY anyway).
-   Only then may the slice be called Emulator-tested.
-2. When green: merge to `main` (owner rule: after good tests), so host + device CI run there.
+1. Done (see evidence). Main carries this once the fix commit's host + device runs are green.
+2. Look at the `device` run on `main` after the merge.
 3. Time one Sun+Moon evaluation on the device: `fm1_ticks()` around it, shown on screen or in the probe (emulator CPU
    time is not a device figure; ask the owner for a hardware reading — **no flashing without the owner's go-ahead**).
 4. `pages.yml`, `site_emu.sh`, `site_front.sh` (assert prefix `FM-1_44`), `site/index.html`, `site/install.html`

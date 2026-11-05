@@ -214,7 +214,7 @@ static void app_main(void)
                 char s[24], *p = put(s, "TEST TONE ");
                 p = put(p, NOTE[note % 12u]);
                 p = put_n(p, note / 12u - 1u, 1);
-                put(p, " (TEMP)");
+                *put(p, " (TEMP)") = 0;      /* (put() does not end the string) */
                 draw_text_box(0, 214, 240, &FONT_S, s, C_GREY, 1);
                 drawn_note = note;
             }
