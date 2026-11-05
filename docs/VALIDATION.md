@@ -45,7 +45,8 @@ Pages publication must be verified separately after push/deployment; local succe
 
 Local Chromium checks passed: J2000 and +30-day WebAssembly results, package SHA-256/catalog consistency,
 fresh real-emulator startup with networking disabled, no JavaScript page errors and a 390-pixel mobile
-layout. Testing found and fixed cache lookup for directory URLs and wrapping of the package checksum on
+layout. The browser harness now uses the /ASTRA-FM-1/ project Pages prefix, including the offline emulator.
+Testing found and fixed cache lookup for directory URLs and wrapping of the package checksum on
 small screens. Host tests also passed AddressSanitizer and UndefinedBehaviorSanitizer.
 
 ## Not implemented or tested

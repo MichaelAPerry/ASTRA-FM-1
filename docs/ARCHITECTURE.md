@@ -62,8 +62,9 @@ complete artifact; no CDNs/fonts are required. Responsive engineering styling is
 The build refuses to package the site if the firmware checksum differs from the passing smoke report.
 Manifest records the source commit/dirty state, platform/SDK/emulator pins and package hash. Cache version
 depends on all asset contents, avoiding an old package under a new catalog. Matching staged platform source
-and license notices accompany binary artifacts. CI must pass before a Pages artifact is available; deployment
-requires an explicit manual choice on main. No automatic hardware flashing or deployment from astra.
+and license notices accompany binary artifacts. CI must pass before a Pages artifact is available; pushes
+to main deploy that validated artifact automatically. A manual deployment option also exists on main.
+The astra branch validates without deploying. No automatic hardware flashing.
 
 Advanced natal wheels, profiles and chart libraries are future work. Prefer a small original SVG renderer for
 auditability, or evaluate an MIT chart library against house/aspect requirements before adoption. The final

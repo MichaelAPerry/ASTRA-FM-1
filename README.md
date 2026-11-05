@@ -39,7 +39,9 @@ python3 tools/build_site.py
 Native build needs `JIELI_TOOLCHAIN` and `AC79_SDK`; exact versions/checksums are checked before packaging.
 See [setup](docs/SETUP.md), [architecture and research](docs/ARCHITECTURE.md), [validation](docs/VALIDATION.md),
 and [licensing](THIRD_PARTY.md). The CI workflow repeats builds and emulator tests and uploads the full site.
-Deployment is separately opt-in; creating this branch does not deploy a website.
+Pushes to main deploy the validated artifact to GitHub Pages. The astra branch builds and tests only;
+merge it to main to publish. Manual deployment is also available on main. Pages must use GitHub Actions
+as its source; the raw repository root is not the generated website.
 
 For local browser development, serve `build/site` with `python3 -m http.server --directory build/site 8000`.
 Do not open it as a file: WebAssembly and service workers require HTTP/HTTPS. After its cache is ready,

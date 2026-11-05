@@ -9,12 +9,18 @@ try { playwright = require('playwright'); }
 catch { playwright = createRequire(path.resolve('build/browser/package.json'))('playwright'); }
 const {chromium} = playwright;
 const root = path.resolve(__dirname,'..');
-const server = spawn('python3',['-m','http.server','8765','--bind','127.0.0.1','--directory',root+'/build/site'],{stdio:'ignore'});
+// Match GitHub project Pages, including its /ASTRA-FM-1/ prefix.
+const serverRoot = root+'/build/browser-server';
+fs.mkdirSync(serverRoot,{recursive:true});
+const mount = serverRoot+'/ASTRA-FM-1';
+if(!fs.existsSync(mount)) fs.symlinkSync(root+'/build/site',mount,'dir');
+const base = 'http://127.0.0.1:8765/ASTRA-FM-1/';
+const server = spawn('python3',['-m','http.server','8765','--bind','127.0.0.1','--directory',serverRoot],{stdio:'ignore'});
 (async()=>{
   let browser;
   try {
     for(let i=0;i<50;i++) {
-      try { if((await fetch('http://127.0.0.1:8765/manifest.json')).ok) break; } catch {}
+      try { if((await fetch(base+'manifest.json')).ok) break; } catch {}
       await new Promise(r=>setTimeout(r,100));
       if(i===49) throw new Error('HTTP server did not start');
     }
@@ -22,7 +28,7 @@ const server = spawn('python3',['-m','http.server','8765','--bind','127.0.0.1','
     const context=await browser.newContext();
     const errors=[]; context.on('page',p=>p.on('pageerror',e=>errors.push(e.message)));
     const page=await context.newPage();
-    await page.goto('http://127.0.0.1:8765/');
+    await page.goto(base);
     await page.waitForFunction(()=>document.querySelector('#position').textContent.includes('280.376'));
     await page.locator('#utc').fill('2000-01-31T12:00');
     await page.locator('#sky button').click();
@@ -49,7 +55,7 @@ const server = spawn('python3',['-m','http.server','8765','--bind','127.0.0.1','
     await page.locator('#sky button').click();
     await page.waitForFunction(()=>!document.querySelector('#position').textContent.includes('280.376'));
     const emu=await context.newPage();
-    await emu.goto('http://127.0.0.1:8765/fm1-emu/');
+    await emu.goto(base+'fm1-emu/');
     await emu.locator('#fw').selectOption('astra');
     const before=await emu.locator('#panel').evaluate(c=>c.toDataURL());
     await emu.locator('#start').click();
