@@ -1,0 +1,85 @@
+name: Build and validate ASTRA
+on:
+  workflow_call:
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: '1.99.1'
+          targets: wasm32-unknown-unknown
+      - name: Dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m pip install -r requirements-dev.txt
+          mkdir -p build/toolchain
+          curl -fL --retry 3 https://pkgman.jieliapp.com/s/linux-toolchain -o build/toolchain/compiler.tar.xz
+          echo 'a1545cddbc451a06bac43eb5cd96d831470c42a97c5c0b1f98879a20fc7647bd  build/toolchain/compiler.tar.xz' | sha256sum --check
+          tar -xJf build/toolchain/compiler.tar.xz -C build/toolchain
+          echo "JIELI_TOOLCHAIN=$PWD/build/toolchain/jieli-linux-toolchains-20260730.1" >> "$GITHUB_ENV"
+          git clone --depth 1 --branch AC79NN_SDK_V1.2.1_2023-12-13 https://gitee.com/Jieli-Tech/fw-AC79_AIoT_SDK.git build/ac79-sdk
+          test "$(git -C build/ac79-sdk rev-parse HEAD)" = d179b4484759423312073f5fbb232501aa491047
+          echo "AC79_SDK=$PWD/build/ac79-sdk" >> "$GITHUB_ENV"
+          npm install --prefix build/browser playwright@1.62.1
+          build/browser/node_modules/.bin/playwright install --with-deps chromium
+      - name: Host and independent astronomy reference
+        run: |
+          set -euo pipefail
+          cmake -S . -B build/host -DCMAKE_BUILD_TYPE=Release
+          cmake --build build/host --parallel 4
+          ctest --test-dir build/host --output-on-failure
+          gcc -std=c99 -fsanitize=address,undefined -g -Ishared shared/astro.c tests/test_astro.c -o build/sanitized-tests
+          build/sanitized-tests
+          gcc -std=c99 -fPIC -shared shared/astro.c -o build/libastra.so
+          python3 tools/compare_sun.py
+      - name: Native firmware
+        run: |
+          set -euo pipefail
+          python3 tools/build_native.py | tee build/native-build.log
+      - name: Emulator tooling and actual firmware smoke gate
+        run: |
+          set -euo pipefail
+          git clone https://github.com/joakimeriksson/fm1-emu build/deps/fm1-emu
+          git -C build/deps/fm1-emu checkout --detach 9de1ef053a3c4bf56f16f05b5f0de193f4608a1d
+          cargo build --locked --manifest-path build/deps/fm1-emu/Cargo.toml --release -p fm1-emu -j4
+          FM1_EMU_BIN="$PWD/build/deps/fm1-emu/target/release/fm1-emu" python3 tools/emu_smoke.py
+      - name: Matching website, source archive and offline browser gate
+        run: |
+          set -euo pipefail
+          python3 tools/build_site.py
+          node tests/browser.cjs
+          python3 tools/source_archive.py
+          mkdir -p build/release
+          cp build/native/astra-dev.fwsc build/native/astra-dev.bin build/astra-source.tar.gz build/release/
+          cp build/site/manifest.json build/release/
+          cd build/release
+          sha256sum astra-dev.fwsc astra-dev.bin astra-source.tar.gz manifest.json > SHA256SUMS
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: validation-evidence
+          path: |
+            build/emulator/
+            build/native-build.log
+            build/browser-*.png
+            build/browser-report.json
+            build/sun-comparison.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: astra-development-package
+          path: build/release/
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: build/site

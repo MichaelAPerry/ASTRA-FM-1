@@ -1,0 +1,32 @@
+name: ASTRA validation and optional Pages
+on:
+  push:
+    branches: [astra, main]
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      deploy:
+        description: 'Publish the validated prototype to Pages (main only)'
+        type: boolean
+        default: false
+permissions:
+  contents: read
+concurrency:
+  group: astra-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  build:
+    uses: ./.github/workflows/build.yml
+  deploy:
+    if: github.event_name == 'workflow_dispatch' && inputs.deploy && github.ref == 'refs/heads/main'
+    needs: build
+    runs-on: ubuntu-24.04
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
