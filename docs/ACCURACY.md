@@ -19,7 +19,13 @@ Limits, stated:
 - Delta T (TT − UT): Espenak–Meeus table to 2050, their parabola after. After ~2025 it is a prediction; a 10 s error
   moves the Moon by 0.0014°.
 - Input is UTC. Local time zones/DST are the caller's job (device: user-entered offset; site: the browser's tz data).
-- Cost on the host build: 5.5 KB code+tables (x86-64 -O2), 0 bytes RAM. Device size: to be measured with the JieLi
-  toolchain (HANDOFF next step 1). CPU cost on the device: to be measured; it runs in the main loop, never the ISR.
+- Cost on the host build: 5.5 KB code+tables (x86-64 -O2), 0 bytes RAM.
+- **Device size, measured 2026-11-05** (JieLi clang 4.0.1, `-target pi32v2`, Dinghy's flags `-Os -ffunction-sections
+  -fno-builtin`; `core/astro/astro.c` alone, before `astro_civil_from_days` was added): **1,606 B code + 2,536 B tables
+  = 4,142 B flash, 0 B RAM**; with `astro_civil_from_days` (+176 B, for the clock) **4,318 B**. No undefined symbols (no 64-bit helpers, no libc). That is 0.7 % of Dinghy's 568 KB
+  code+constants budget. The whole app (`native/astra.c` with Dinghy's platform) compiles for the device with no
+  warnings and no helper calls; its linked size and Dinghy's post-link checks come from the first CI device build.
+  CPU cost on the device: to be measured (`fm1_ticks()` around one Sun+Moon evaluation); it runs in the main loop,
+  never the ISR.
 - Precision for astrology: zodiac positions are shown to the arcminute (1′ = 0.0167°), so the Sun and Moon are
   within one displayed arcminute nearly always; the Moon can be off by up to ~1′ at its worst.

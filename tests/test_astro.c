@@ -19,6 +19,13 @@ int main(void) {
     CHECK(astro_days_from_civil(2000, 1, 1) == 10957, "2000");
     CHECK(astro_days_from_civil(1800, 3, 1) - astro_days_from_civil(1800, 2, 28) == 1, "1800 not leap");
     CHECK(astro_days_from_civil(2000, 3, 1) - astro_days_from_civil(2000, 2, 28) == 2, "2000 leap");
+    { int32_t z, y; uint32_t m, d;              /* the inverse round-trips every day 1700-2300 */
+      for (z = astro_days_from_civil(1700, 1, 1); z <= astro_days_from_civil(2300, 12, 31); z++) {
+          astro_civil_from_days(z, &y, &m, &d);
+          if (astro_days_from_civil(y, m, d) != z || m < 1 || m > 12 || d < 1 || d > 31) { CHECK(0, "civil %d", (int)z); break; }
+      }
+      astro_civil_from_days(0, &y, &m, &d); CHECK(y == 1970 && m == 1 && d == 1, "civil epoch");
+      astro_civil_from_days(astro_days_from_civil(2000, 2, 29), &y, &m, &d); CHECK(y == 2000 && m == 2 && d == 29, "civil leap"); }
     { astro_time_t t = astro_time_tt(2000, 1, 1, 12, 0, 0); CHECK(t.days == 0 && t.frac16 == 0, "J2000.0"); }
     { astro_time_t t = astro_time_tt(2000, 1, 1, 0, 0, 0); CHECK(t.days == -1 && t.frac16 == 32768, "J2000.0 - 12h"); }
     /* sine and wraparound */

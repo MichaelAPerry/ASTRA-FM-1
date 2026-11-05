@@ -26,7 +26,9 @@ owner has decided and what is still open). Update HANDOFF.md and DECISIONS.md at
 - Host: `cmake -S . -B build -DCMAKE_BUILD_TYPE=Release && cmake --build build && ctest --test-dir build --output-on-failure`
   (0 warnings: `-Werror` on core/).
 - Reference data: `pip install astronomy-engine && python3 tools/gen_reference.py` (only when adding reference dates).
-- Device build, fm1-emu gate, Pages, release: not in this repo yet; recipe and exact pins in docs/HANDOFF.md.
+- Device: `bash native/build.sh` (needs JIELI_TOOLCHAIN, AC79_SDK; see docs/HANDOFF.md) -> `build/native/astra.fwsc`.
+  Gate: `tools/emu_smoke.sh build/native/astra.fwsc build/native/astra-probe.txt build/emu build/emu_expect FM1_EMU`.
+  Both run in CI (`.github/workflows/device.yml`). Pages and release: not in this repo yet; recipe in docs/HANDOFF.md.
 
 ## Git workflow (owner rule)
 - Work on your own branch. Push to `main` only after good tests: the full host build and `ctest` pass (and, once

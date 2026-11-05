@@ -6,4 +6,10 @@
   ch. 22, 25, 47 — published mathematical methods, reimplemented here; Delta T from Espenak & Meeus (NASA).
 - Astronomy Engine (Don Cross, MIT) is used only by `tools/gen_reference.py` to produce test reference values
   (`tests/astro_ref.h`); none of its code is in the firmware.
+- `native/astra.c` is compiled as Dinghy's app (zvenson/dinghy, GPL-3.0-only, Leo Kuroshita / Hügelton Instruments
+  via Felucca, isod89 via SLOOP): it includes Dinghy's `platform.c`, and copies Dinghy's `sine()` and `INC_C9` table
+  (attributed in place). The built `.fwsc` is GPL-3.0-only.
+- `native/build.sh`, `tools/emu_smoke.sh`, `.github/workflows/device.yml`: adapted from MIKU-FM1 (MIT, same owner).
+- fm1-emu (Joakim Eriksson, MIT): built and run by CI only, not shipped yet. JieLi toolchain and AC79 SDK files
+  (`uboot.boot`, `cfg_tool.bin`, `cfg/eq_cfg_hw.bin`): vendor tools used by Dinghy's build, not part of this repo.
 - Check every new dependency's licence and record it here before use.

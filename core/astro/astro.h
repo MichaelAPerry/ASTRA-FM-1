@@ -15,6 +15,8 @@ typedef struct { int8_t d, m, mp, f; int32_t amp; } astro_term_t;
 
 /* days from 1970-01-01 of a proleptic Gregorian date (H. Hinnant's algorithm) */
 int32_t astro_days_from_civil(int32_t y, uint32_t m, uint32_t d);
+/* the inverse: days from 1970-01-01 to a proleptic Gregorian date */
+void astro_civil_from_days(int32_t z, int32_t *y, uint32_t *m, uint32_t *d);
 /* Delta T = TT - UT in seconds (table 1800-2050, held constant outside: an approximation, documented) */
 int32_t astro_delta_t(int32_t year);
 /* a UTC civil date and time to TT */

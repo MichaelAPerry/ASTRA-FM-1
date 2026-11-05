@@ -31,3 +31,7 @@ Owner answers, 2026-11-05:
 
 | # | Question | Options | Recommendation |
 |---|---|---|---|
+| D9 | Vertical-slice controls, layout and test tone (native/astra.c): K1..K4 + SELECT edit year/month/day/hour/minute, PLAY sets; Moon sign → A3..G#4 sine | All TEMPORARY engineering choices, for testing only | Keep until D2 and the interface proposal (HANDOFF step 8); not a design |
+
+Engineering choices recorded (reversible, not owner decisions): package identity prefix `FM-1_44` (2026-11-05,
+survey in HANDOFF); settings store magic "ASTR".

@@ -1,4 +1,4 @@
-# Handoff (2026-11-05, session 1: foundation)
+# Handoff (2026-11-05, session 2: device size, vertical slice, emulator gate)
 
 ## Where things stand
 
@@ -6,14 +6,40 @@
 |---|---|
 | Repo layout, CMake, host CI (`.github/workflows/host.yml`) | Implemented, Host-tested (CI run not yet observed) |
 | Integer Sun + Moon longitude engine `core/astro/` (no float, freestanding) | Host-tested: 120 reference dates, see [ACCURACY.md](ACCURACY.md) |
-| Calendar (UTC civil → TT, Delta T), zodiac sign/arcminute helpers | Host-tested |
+| Calendar both ways (`astro_civil_from_days` new: round-trips every day 1700–2300), Delta T, sign helpers | Host-tested |
+| `core/astro` device size: **4,318 B flash, 0 B RAM**, no helper calls | Measured with JieLi clang 4.0.1 (compile only) |
+| Vertical slice `native/astra.c` (Dinghy app): UTC entry, Sun + Moon on screen, TEMPORARY Moon-sign tone, D5 clock states | Implemented; compiles for the device (0 warnings, no helpers). **Not linked, not run yet** |
+| `native/build.sh` (Dinghy at f77bf03, identity `FM-1_44XXYYZZ`, store magic "ASTR") | Implemented; its build.py patches checked against Dinghy f77bf03. Not run here |
+| `tools/emu_smoke.sh` + `tests/emu_expect.c`: the fm1-emu gate with a bit-exact astronomy check | Implemented; script logic tested against a fake emulator (pass and fail cases). Not run on the real emulator yet |
+| `.github/workflows/device.yml`: toolchain, SDK, `native/build.sh`, fm1-emu 9de1ef0, gate, artifacts | Implemented; first run pending (see below) |
 | Planets, retrograde, aspects, Ascendant/houses | Designed (below) |
-| Native firmware (Dinghy app), .fwsc, fm1-emu gate | Not started — recipe below |
 | GitHub Pages site, installer, release/attestation | Not started — recipe below |
 | Owner decisions | D1, D3–D8 decided 2026-11-05; D2 waits for the vertical slice: [DECISIONS.md](DECISIONS.md) |
 
-Session 1 was short (owner near a usage limit). It spent its effort on the riskiest unknown: can real astronomy run
-on the FM-1's integer-only CPU? Answer for Sun and Moon: yes, ~5.5 KB and sub-arcminute accuracy.
+Nothing here is Emulator-tested, Hardware-tested or Published yet.
+
+### Session 2 notes
+- **Sandbox limit:** this session's safety check refused to run Dinghy's `build.sh`/`tools/build.py` (third-party code)
+  in the sandbox, so the full firmware build and fm1-emu were not run here. What was run: our own code, and JieLi's
+  clang as a compiler on our sources (and Dinghy's headers, compile only). The full build and the gate run in CI
+  (`device.yml`), on GitHub's runners, exactly as MIKU-FM1 does. To run them in a session instead, the owner can allow
+  it in that session's permissions.
+- Toolchain: `pkgman.jieliapp.com/s/linux-toolchain` today serves `jieli-linux-toolchains-20260730.1` (clang 4.0.1).
+  Gitee resets most connections from the sandbox; the three SDK files came through raw links after retries, with the
+  SHA-256s Dinghy's build.py expects.
+- **Identity `FM-1_44`:** decoded the identity of the 151 downloadable packages (of 155) in fm1-emu's hub catalog
+  (`web/firmwares.json`; the identity is in the package bytes, MIKU's `site_front.sh` formula) and searched public
+  GitHub code. Taken 2-digit prefixes: 00 10 15 19 21 22 23 25 30 32 33 35 37 38 42 43 46 47 48 50 57 60 61 64 66 67 70 71 72 73 76 77 79 80 81 83 87 88 90 91 92 93 94 95 96 97 98 99; plus 39 (MIKU, not in the catalog) and 12 (fm1-base's examples). `FM-1_44`: no package, no code hit. Note it is not
+  `FM-1_9NN`, so the web installers will not resume a cut-off install of ASTRA's loader (Dinghy MAKE-IT-YOURS §3);
+  MIKU has the same trade-off with `FM-1_39`. Not checked: the hub's live table (MIKU did that with Playwright).
+- The gate (`tools/emu_smoke.sh`): boots, K1 +26 / K2 +10 / K3 +4 turn the editor from 2000-01-01 12:00 to
+  2026-11-05 12:00 UTC, PLAY sets it; then reads `astra_probe` (address from the ELF via `nm`, written by build.sh to
+  `build/native/astra-probe.txt`) with `--dump`, and requires: date 2026-11-05, state SET, clock running, Sun and Moon
+  BAM equal to `build/emu_expect` for the same instant (bit for bit), tone pitch within 3 % of the Moon-sign note, > 2
+  screen colours, and the state line redrawn after PLAY. Risk not yet seen: whether fm1-emu delivers 26 encoder clicks
+  given in one event as 26 detents (if not, split them into several timed events).
+- The settings save erases a flash sector, which stalls the test tone ~50 ms (Dinghy saves only when silent; this
+  tone never is). Fine for the slice; the music engine will need a quiet moment or a fade before saving.
 
 ## MIKU-FM1: the proven pipeline to copy (inspected 2026-11-05 at 88b0ef3)
 
@@ -71,15 +97,16 @@ Same hardware, same owner, released and hardware-tested (v0.6). Reuse its shape;
 
 ## Next steps (in order)
 
-1. **Device size check**: drop `core/astro/astro.c` into a minimal Dinghy app and build with the JieLi toolchain;
-   record flash/RAM from Dinghy's checks. Time one Sun+Moon evaluation on device later (emulator CPU% is not a device figure).
-2. **Vertical slice (Step 7)**: `native/astra.c` on Dinghy: boot screen asks for UTC date/time (encoders), shows Sun and
-   Moon sign + degree, and a TEMPORARY test tone whose pitch follows the Moon's longitude (e.g. 12 signs → 12 semitones).
-   `native/build.sh` adapted from MIKU (new identity prefix, store magic "ASTR", screen name "ASTRA").
-3. `tools/emu_smoke.sh` adapted; add an astronomy assertion: boot with a fixed date via `--keys`, snapshot, compare the
-   rendered longitude text/pixels with the host value for the same date (repeatable).
-4. `pages.yml`, `site_emu.sh`, `site_front.sh`, `site/index.html`, `site/install.html` adapted from MIKU; enable Pages
-   (Settings → Pages → GitHub Actions). Then `release.yml` with `zvenson/fm1-build@v1`.
-5. Planets (JPL elements), retrograde, aspects — each host-tested against Astronomy Engine.
-6. WASM build of `core/` and the companion chart page (offline: service worker). Charting library choice: DECISIONS D6.
-7. Present the creative options (DECISIONS D2, D3, D7) to the owner.
+1. **Look at the first `device` CI run** (push of this branch). Fix what it finds: the link, Dinghy's post-link checks
+   (ROM addresses, registers, RAM), the emulator gate. Record the linked image/RAM sizes Dinghy prints in ACCURACY.md.
+   Download the artifact's `lcd_2800.bmp` and look at it (text fits the width? the layout is TEMPORARY anyway).
+   Only then may the slice be called Emulator-tested.
+2. When green: merge to `main` (owner rule: after good tests), so host + device CI run there.
+3. Time one Sun+Moon evaluation on the device: `fm1_ticks()` around it, shown on screen or in the probe (emulator CPU
+   time is not a device figure; ask the owner for a hardware reading — **no flashing without the owner's go-ahead**).
+4. `pages.yml`, `site_emu.sh`, `site_front.sh` (assert prefix `FM-1_44`), `site/index.html`, `site/install.html`
+   adapted from MIKU; enable Pages (Settings → Pages → GitHub Actions). Then `release.yml` with `zvenson/fm1-build@v1`.
+5. D5 remainder: time-zone offset entry and storage (UTC + offset); USB time sync through the install site (D8 path).
+6. Planets (JPL elements), retrograde, aspects — each host-tested against Astronomy Engine.
+7. WASM build of `core/` and the companion chart page (offline: service worker). Own SVG chart (D6).
+8. With the slice running in the emulator: present D2 (2–3 demo musical modes) and the screen/controls options.

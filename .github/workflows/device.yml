@@ -1,0 +1,68 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Device build and fm1-emu gate (after MIKU-FM1's pages.yml "main" path): build the real .fwsc on Dinghy with JieLi's
+# toolchain, boot it in fm1-emu, and check screen, controls, UI state, sound and the astronomy (tools/emu_smoke.sh).
+# The package and the evidence (WAV, screen BMPs, log) are uploaded as artifacts. Not attested: a dev build.
+name: device
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+env:
+  AC79_SDK_TAG: AC79NN_SDK_V1.2.1_2023-12-13
+  AC79_SDK_COMMIT: d179b4484759423312073f5fbb232501aa491047
+  FM1_EMU_COMMIT: 9de1ef053a3c4bf56f16f05b5f0de193f4608a1d   # as MIKU-FM1
+jobs:
+  build-and-emulate:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Host build (the gate's expected values come from it)
+        run: |
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+          cmake --build build --parallel
+          ctest --test-dir build --output-on-failure
+      - name: Toolchain and SDK
+        run: |
+          set -euo pipefail
+          python3 -m pip install -q Pillow
+          mkdir -p "$RUNNER_TEMP/tc" && cd "$RUNNER_TEMP/tc"
+          curl -fL --retry 3 https://pkgman.jieliapp.com/s/linux-toolchain | tar -xJ
+          echo "JIELI_TOOLCHAIN=$(find "$RUNNER_TEMP/tc" -maxdepth 1 -mindepth 1 -type d | head -n 1)" >> "$GITHUB_ENV"
+          sdk="$RUNNER_TEMP/ac79sdk"
+          for i in 1 2 3 4; do
+            rm -rf "$sdk"
+            git clone -q --depth 1 --branch "$AC79_SDK_TAG" https://gitee.com/Jieli-Tech/fw-AC79_AIoT_SDK.git "$sdk" && break
+            [ "$i" = 4 ] && { echo "SDK clone failed"; exit 1; }
+            sleep $((i * 10))
+          done
+          test "$(git -C "$sdk" rev-parse HEAD)" = "$AC79_SDK_COMMIT"
+          echo "AC79_SDK=$sdk" >> "$GITHUB_ENV"
+      - name: Firmware (.fwsc)
+        run: |
+          bash native/build.sh
+          ls -l build/native
+          echo "astra_probe at 0x$(cat build/native/astra-probe.txt)"
+      - uses: actions/cache@v4
+        with:
+          path: build/fm1-emu-src/target
+          key: fm1-emu-${{ env.FM1_EMU_COMMIT }}
+      - name: fm1-emu
+        run: |
+          set -euo pipefail
+          mkdir -p build/fm1-emu-src && cd build/fm1-emu-src   # (target/ may come from the cache: no plain clone)
+          git init -q && git fetch -q --depth 1 https://github.com/joakimeriksson/fm1-emu "$FM1_EMU_COMMIT"
+          git -c advice.detachedHead=false checkout -q FETCH_HEAD
+          cargo build -q --release -p fm1-emu
+      - name: Boot it in fm1-emu (screen, controls, state, sound, astronomy)
+        run: tools/emu_smoke.sh build/native/astra.fwsc build/native/astra-probe.txt build/emu build/emu_expect build/fm1-emu-src/target/release/fm1-emu
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: astra-dev-${{ github.sha }}
+          path: |
+            build/native/astra.fwsc
+            build/native/astra-probe.txt
+            build/emu/boot.log
+            build/emu/audio.wav
+            build/emu/work/lcd_*.bmp
+          if-no-files-found: warn

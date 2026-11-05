@@ -15,6 +15,18 @@ int32_t astro_days_from_civil(int32_t y, uint32_t m, uint32_t d) {
     doe = yoe * 365 + yoe / 4 - yoe / 100 + doy;
     return era * 146097 + doe - 719468;
 }
+void astro_civil_from_days(int32_t z, int32_t *y, uint32_t *m, uint32_t *d) {   /* Hinnant's inverse */
+    int32_t era, doe, yoe, doy, mp;
+    z += 719468;
+    era = (z >= 0 ? z : z - 146096) / 146097;
+    doe = z - era * 146097;
+    yoe = (doe - doe / 1460 + doe / 36524 - doe / 146096) / 365;
+    doy = doe - (365 * yoe + yoe / 4 - yoe / 100);
+    mp = (5 * doy + 2) / 153;
+    *d = (uint32_t)(doy - (153 * mp + 2) / 5 + 1);
+    *m = (uint32_t)(mp < 10 ? mp + 3 : mp - 9);
+    *y = yoe + era * 400 + (*m <= 2u);
+}
 
 /* Delta T (s) every 10 years 1800-2050 (Espenak & Meeus; 2030-2050 their polynomial); after 2050 their long-term
  * parabola. Before 1800: held (outside the supported range). A prediction after ~2025: unknowable to a few seconds. */
