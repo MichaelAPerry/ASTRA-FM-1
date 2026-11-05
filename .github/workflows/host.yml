@@ -1,0 +1,17 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Host build and tests (after MIKU-FM1's host.yml). Device build, fm1-emu gate, Pages and release come next (docs/HANDOFF.md).
+name: host
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+      - name: Build
+        run: cmake --build build --parallel
+      - name: Test
+        run: ctest --test-dir build --output-on-failure
+      - name: Generated tables unchanged
+        run: git diff --exit-code core/astro/astro_tables.h
