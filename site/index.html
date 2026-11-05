@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ASTRA FM-1 · Engineering prototype</title>
+<link rel="stylesheet" href="style.css">
+<main>
+  <p class="eyebrow">ASTRA FM-1 / development laboratory</p>
+  <h1>A real sky.<br>A first signal.</h1>
+  <p>Offline astronomy on the FM-1. This first engineering prototype calculates the Sun’s longitude,
+    displays it on the instrument, and turns it into a test tone. Musical mappings and visual identity are provisional.</p>
+  <section aria-labelledby="sky-title">
+    <h2 id="sky-title">Explore a date locally</h2>
+    <p>The same C calculation runs in the device and here as WebAssembly. No date is sent to a server.</p>
+    <form id="sky"><label>UTC date and time <input id="utc" type="datetime-local" min="1950-01-01T00:00" max="2050-12-31T23:59" value="2000-01-01T12:00" required></label>
+      <button>Calculate Sun</button></form>
+    <output id="position" aria-live="polite">Loading the local calculation engine…</output>
+    <p>Approximate geocentric ecliptic longitude. Supported interval: 1950–2050.
+      This is astronomy, not a predictive horoscope. Natal charts, planets, Moon and houses are not implemented yet.</p>
+  </section>
+  <section aria-labelledby="instrument-title">
+    <h2 id="instrument-title">The actual firmware, emulated</h2>
+    <p>Press Start in the emulator, then PLAY on the panel to hear the engineering signal.
+      Turn SELECT to explore days from 2000-01-01 at 12:00 UTC. The instrument starts with an explicitly labelled
+      test date, not the current time. This browser calculator does not change the emulator’s date.</p>
+    <p><a href="fm1-emu/">Open the standalone FM-1 emulator →</a></p>
+    <iframe title="ASTRA firmware running in the FM-1 emulator" src="fm1-emu/" allow="autoplay" loading="lazy"></iframe>
+  </section>
+  <section>
+    <h2>Build evidence</h2>
+    <p>Engineering firmware only. Not hardware-tested; the development package identity is provisional.
+      Physical installation is not offered at this milestone.</p>
+    <a href="firmware/astra-dev.fwsc" download>Download the emulator-tested development package</a>
+    <p><a href="astra-source.tar.gz" download>Matching ASTRA and platform source archive</a> · <a href="SDK-LICENSE">SDK asset license</a></p>
+    <p><a href="manifest.json">Build provenance and package checksum</a> · <a href="VALIDATION.md">Validation and limits</a> · <a href="THIRD_PARTY.md">Licenses</a></p>
+    <p id="build"></p><p id="offline" role="status"></p>
+  </section>
+  <footer>ASTRA is a working title. A scientific position calculation is distinct from a symbolic astrological interpretation.</footer>
+</main><script type="module" src="app.js"></script></html>
