@@ -10,7 +10,7 @@
 | Planets, retrograde, aspects, Ascendant/houses | Designed (below) |
 | Native firmware (Dinghy app), .fwsc, fm1-emu gate | Not started — recipe below |
 | GitHub Pages site, installer, release/attestation | Not started — recipe below |
-| Owner decisions | None taken yet: [DECISIONS.md](DECISIONS.md) |
+| Owner decisions | D1, D3–D8 decided 2026-11-05; D2 waits for the vertical slice: [DECISIONS.md](DECISIONS.md) |
 
 Session 1 was short (owner near a usage limit). It spent its effort on the riskiest unknown: can real astronomy run
 on the FM-1's integer-only CPU? Answer for Sun and Moon: yes, ~5.5 KB and sub-arcminute accuracy.
@@ -50,7 +50,7 @@ Same hardware, same owner, released and hardware-tested (v0.6). Reuse its shape;
    The `github-pages` environment must allow tags `v*`.
 7. **Listing** — `fmhub.json` + `docs/card.png` (a real 240×240 screen capture) for thefirmwarehub.com.
 
-## Recommended architecture (owner to confirm platform — DECISIONS D1)
+## Architecture (platform: Dinghy, owner decision D1)
 
 - **Platform: Dinghy**, as MIKU. Proven by this owner end to end (build, emu, Pages, attested release, hardware
   install/update, saves). Not yet compared first-hand this session: fm1-base (MPL platform template, MPFM1), COSMOS
