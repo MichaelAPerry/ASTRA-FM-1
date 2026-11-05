@@ -21,7 +21,7 @@ git checkout -q --detach "$DINGHY_COMMIT"
 cp "$ROOT/native/astra.c" firmware/src/dinghy.c
 # core/ keeps its repo path: astra.c includes "core/astro/astro.c" (-Ifirmware/src finds it)
 mkdir -p firmware/src/core/astro
-cp "$ROOT"/core/astro/astro.[ch] "$ROOT"/core/astro/astro_tables.h firmware/src/core/astro/
+cp "$ROOT"/core/astro/astro.[ch] "$ROOT"/core/astro/planets.c "$ROOT"/core/astro/*_tables.h firmware/src/core/astro/
 python3 - <<'PY'
 from pathlib import Path
 p=Path('tools/build.py')

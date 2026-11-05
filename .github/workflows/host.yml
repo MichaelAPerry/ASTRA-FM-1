@@ -14,4 +14,4 @@ jobs:
       - name: Test
         run: ctest --test-dir build --output-on-failure
       - name: Generated tables unchanged
-        run: git diff --exit-code core/astro/astro_tables.h
+        run: git diff --exit-code core/astro/astro_tables.h core/astro/planet_tables.h

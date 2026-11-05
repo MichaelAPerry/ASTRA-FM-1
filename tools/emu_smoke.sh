@@ -6,7 +6,8 @@
 #   - the controls: from the editor's start (2000-01-01 12:00 UTC, NOT SET) the knobs turn it to 2026-11-05, PLAY sets it;
 #   - the UI state: NOT SET before PLAY, SET after, the clock running from 12:00:00 since;
 #   - the astronomy: the Sun and Moon longitudes the firmware computed (astra_probe, read with --dump) equal, to the bit,
-#     what the host build of the same core/astro gives for the same instant (EXPECT = build/emu_expect);
+#     what the host build of the same core/astro gives for the same instant (EXPECT = build/emu_expect); the same for
+#     the eight planets' longitude and day motion (each computed in its own main-loop pass, at its own second);
 #   - the TEMPORARY test tone: its measured pitch is the note the Moon's sign gives.
 # Evidence (WAV, BMPs, log) goes to OUT_DIR.
 #   tools/emu_smoke.sh PACKAGE.fwsc PROBE.txt OUT_DIR EXPECT [FM1_EMU_BIN]
@@ -18,14 +19,16 @@ mkdir -p "$OUT/work"                            # fm1-emu writes snapshots to wo
 cd "$OUT"
 # K1 (enc2) +26 years, K2 (enc3) +10 months, K3 (enc4) +4 days: 2026-11-05 12:00 UTC. PLAY at 1500 ms sets it.
 "$EMU" --fwsc "$PKG" --ms 3000 --keys '300:enc2:+26,600:enc3:+10,900:enc4:+4,1500:PLAY' --snap 1300,2800 \
-       --wav audio.wav --dump "$PROBE" 7 > boot.log 2>&1
+       --wav audio.wav --dump "$PROBE" 32 > boot.log 2>&1
 python3 - "$EXPECT" <<'PY'
 import array, re, subprocess, sys, wave
 from PIL import Image
 log = open("boot.log").read()
-m = re.search(r"^dump 0x[0-9a-f]+ \(7 words\):\n\s+0x[0-9a-f]+:((?: [0-9a-f]{8}){7})", log, re.M)
+m = re.search(r"^dump 0x[0-9a-f]+ \(32 words\):\n((?:\s+0x[0-9a-f]+:(?: [0-9a-f]{8})+\n?)+)", log, re.M)
 assert m, "no probe dump in boot.log"
-magic, days, sec, state, sun, moon, note = (int(w, 16) for w in m[1].split())
+w = [int(x, 16) for row in m[1].strip().splitlines() for x in row.split(":")[1].split()]
+assert len(w) == 32, f"probe: {len(w)} words"
+magic, days, sec, state, sun, moon, note = w[:7]
 days -= (days >> 31) << 32                       # int32
 assert magic == 0x50525453, f"probe never filled (magic {magic:#x})"
 print(f"emu_smoke: probe days {days} sec {sec} state {state} sun {sun:08x} moon {moon:08x} note {note}")
@@ -35,6 +38,15 @@ assert 43200 < sec <= 43200 + 2, f"sec {sec}: want 12:00:00 plus the ~1.5 s sinc
 want = subprocess.run([sys.argv[1], str(days), str(sec)], check=True, capture_output=True, text=True).stdout.split()
 assert [f"{sun:08x}", f"{moon:08x}", str(note)] == want, f"device {sun:08x} {moon:08x} {note}, host {want}"
 print(f"emu_smoke: Sun {sun * 360 / 2**32:.4f} deg, Moon {moon * 360 / 2**32:.4f} deg: device == host, bit for bit")
+NAMES = ["Mercury", "Venus", "Mars", "Jupiter", "Saturn", "Uranus", "Neptune", "Pluto"]
+for b in range(8):
+    lon, speed, psec = w[7 + 3 * b:10 + 3 * b]
+    assert 43200 <= psec <= 43202, f"{NAMES[b]}: computed at sec {psec}"
+    want = subprocess.run([sys.argv[1], "planet", str(b), str(days), str(psec)], check=True, capture_output=True, text=True).stdout.split()
+    assert [f"{lon:08x}", f"{speed:08x}"] == want, f"{NAMES[b]}: device {lon:08x} {speed:08x}, host {want}"
+    sp = (speed - (speed >> 31 << 32)) * 360 / 2**32
+    print(f"emu_smoke: {NAMES[b]:7s} {lon * 360 / 2**32:8.4f} deg, {sp:+.4f} deg/day{' (retrograde)' if sp < 0 else ''}: device == host")
+print(f"emu_smoke: longest planet pass {w[31]} us (emulator timer: not a device figure)")
 
 with wave.open("audio.wav", "rb") as w:
     rate, ch, n = w.getframerate(), w.getnchannels(), w.getnframes()

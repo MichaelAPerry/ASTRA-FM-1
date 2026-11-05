@@ -21,6 +21,7 @@
 #define APP_NAME "ASTRA"
 #include "platform.c"
 #include "core/astro/astro.c"
+#include "core/astro/planets.c"
 
 /* ---- the sound (audio ISR: one sine; the main loop writes inc, one 32-bit word) */
 static volatile uint32_t tone_inc;
@@ -67,7 +68,11 @@ static int32_t clk_days;
 static uint32_t clk_sec, clk_ms, clk_state;
 /* what the emulator gate reads back (tools/emu_smoke.sh, fm1-emu --dump): the last computed instant and its result.
  * Not static, so build.sh finds its address by name. Written only by the main loop. */
-volatile struct { uint32_t magic; int32_t days; uint32_t sec, state; astro_bam_t sun, moon; uint32_t note; } astra_probe;
+volatile struct {
+    uint32_t magic; int32_t days; uint32_t sec, state; astro_bam_t sun, moon; uint32_t note;
+    struct { astro_bam_t lon; int32_t speed; uint32_t sec; } pl[ASTRO_NPLANET];   /* the planets, as last computed */
+    uint32_t pl_us_max;                         /* the longest planet pass, microseconds (fm1_ticks) */
+} astra_probe;
 #define DAYS_MIN (-62091)                       /* 1800-01-01: core/astro's supported range */
 #define DAYS_MAX 84371                          /* 2200-12-31 */
 
@@ -180,6 +185,7 @@ static void app_main(void)
     draw_text_box(0, 150, 240, &FONT_S, "MOON", C_GREY, 1);
 
     for (;;) {
+        static uint32_t pl_next;
         uint32_t b, rel, note;
         int32_t e1, e2, e3, e4, e5;
         platform_poll();
@@ -220,6 +226,22 @@ static void app_main(void)
             }
             draw_time();
             drawn_sec = clk_sec, drawn_days = clk_days;
+        }
+        {   /* one planet a pass, so platform_poll() never waits for all eight: position and day motion (retrograde < 0).
+             * Not on screen yet: the layout is the owner's (DECISIONS D11). */
+            int32_t y;
+            uint32_t m, d, t0 = fm1_ticks(), us, b = pl_next;
+            astro_pos_t ps;
+            astro_time_t t;
+            astro_civil_from_days(clk_days, &y, &m, &d);
+            t = astro_time_utc(y, m, d, clk_sec / 3600u, clk_sec / 60u % 60u, clk_sec % 60u);
+            astro_planet((int)b, t, &ps);
+            astra_probe.pl[b].speed = astro_planet_speed((int)b, t);
+            astra_probe.pl[b].lon = ps.lon;
+            astra_probe.pl[b].sec = clk_sec;
+            us = (fm1_ticks() - t0) / FM1_TICKS_PER_US;
+            if (us > astra_probe.pl_us_max) astra_probe.pl_us_max = us;
+            pl_next = (b + 1u) % ASTRO_NPLANET;
         }
         if (clk_state != drawn_state) { draw_state(); drawn_state = clk_state; astra_probe.state = clk_state; }
         if (astro_sign(sun) * 1800u + astro_sign_arcmin(sun) != sun_drawn) {

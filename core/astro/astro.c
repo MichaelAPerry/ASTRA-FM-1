@@ -84,6 +84,8 @@ static int32_t nutation(astro_time_t t) {
          + astro_mul_q30(NUT_2LP, astro_sin_q30(2u * lin(&astro_el[EL_MOON_LP], t))) + astro_mul_q30(NUT_2OM, astro_sin_q30(2u * om));
 }
 
+int32_t astro_nutation(astro_time_t t) { return nutation(t); }
+
 astro_bam_t astro_sun_lon(astro_time_t t, int apparent) {
     astro_bam_t l0 = lin(&astro_el[EL_SUN_L0], t), m = lin(&astro_el[EL_SUN_M], t);
     int32_t tq = t_q16(t);
