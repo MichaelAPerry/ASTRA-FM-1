@@ -28,9 +28,14 @@ Owner answers, 2026-11-05:
 ## Open
 
 - D2 (musical character) after the vertical slice. New questions go below.
+- Owner, 2026-11-05: **an FM engine for each planet** (direction; what each engine is and how the sky drives it are
+  still open: D10). **Priorities: features and the firmware's visual style before anything else; no flashing and no
+  Pages/release work until the build is near done and ready to publish.**
 
 | # | Question | Options | Recommendation |
 |---|---|---|---|
+| D10 | The per-planet FM engines: what each planet's voice is (operators, timbre, register) and what drives it | To present with demo modes on the built engine | After the engine foundation (HANDOFF step 4) |
+| D11 | Firmware visual style and main screen layouts | To present as real emulator captures | After planets + aspects exist to show |
 | D9 | Vertical-slice controls, layout and test tone (native/astra.c): K1..K4 + SELECT edit year/month/day/hour/minute, PLAY sets; Moon sign → A3..G#4 sine | All TEMPORARY engineering choices, for testing only | Keep until D2 and the interface proposal (HANDOFF step 8); not a design |
 
 Engineering choices recorded (reversible, not owner decisions): package identity prefix `FM-1_44` (2026-11-05,

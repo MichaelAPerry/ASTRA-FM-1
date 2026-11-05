@@ -109,13 +109,22 @@ Same hardware, same owner, released and hardware-tested (v0.6). Reuse its shape;
 
 ## Next steps (in order)
 
-1. Done (see evidence). Main carries this once the fix commit's host + device runs are green.
-2. Look at the `device` run on `main` after the merge.
-3. Time one Sun+Moon evaluation on the device: `fm1_ticks()` around it, shown on screen or in the probe (emulator CPU
-   time is not a device figure; ask the owner for a hardware reading — **no flashing without the owner's go-ahead**).
-4. `pages.yml`, `site_emu.sh`, `site_front.sh` (assert prefix `FM-1_44`), `site/index.html`, `site/install.html`
-   adapted from MIKU; enable Pages (Settings → Pages → GitHub Actions). Then `release.yml` with `zvenson/fm1-build@v1`.
-5. D5 remainder: time-zone offset entry and storage (UTC + offset); USB time sync through the install site (D8 path).
-6. Planets (JPL elements), retrograde, aspects — each host-tested against Astronomy Engine.
-7. WASM build of `core/` and the companion chart page (offline: service worker). Own SVG chart (D6).
-8. With the slice running in the emulator: present D2 (2–3 demo musical modes) and the screen/controls options.
+Owner, 2026-11-05: features and the firmware's visual style come first. **No hardware flashing and no Pages/release
+work until the build is near done and ready to publish** (Pages is already enabled in the repo settings; leave it).
+
+1. Check the `device` run for the label fix (8675557); main follows the branch once host + device are green.
+2. **Planets** (JPL Keplerian elements, fixed-point Kepler solver, CORDIC atan2): Mercury–Pluto geocentric longitude,
+   host-tested against Astronomy Engine, then bit-exact in the emulator gate like the Sun and Moon. Retrograde
+   (sign of the longitude change over ±12 h). Measure flash and CPU per evaluation on the device build.
+3. **Aspects, orbs, applying/separating** (pure BAM arithmetic), host-tested.
+4. **FM engine foundation** (owner: an FM engine for each planet). Build the engine, not the mapping: N FM voices
+   (operators, ratios, index, envelope) sized to the ISR budget (5.8 ms per 256 frames, keep under half), one voice
+   slot per body, parameters handed from the main loop with single-word writes. Measure ISR time in the emulator
+   (cycle count) and record it. How each planet's position/aspects drive its voice stays the owner's (D2, D3, D10).
+5. **Present options to the owner**: D2 musical character (2–3 demo modes on the per-planet engine), D10 what each
+   planet's engine is, and D11 the firmware's visual style and screen layouts (mockups made from real emulator
+   captures, never JS stand-ins).
+6. Ascendant/MC/houses (D4: every system we implement, tropical and sidereal), time-zone offset (D5), natal profile.
+7. WASM build of `core/` and the companion chart (D6), offline.
+8. Later, when the owner says the build is near done: Pages (`pages.yml`, `site_emu.sh`, `site_front.sh` asserting
+   `FM-1_44`), `release.yml` with `zvenson/fm1-build@v1`, and only with the owner's go-ahead, hardware tests.
