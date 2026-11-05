@@ -29,8 +29,8 @@ owner has decided and what is still open). Update HANDOFF.md and DECISIONS.md at
 - Device build, fm1-emu gate, Pages, release: not in this repo yet; recipe and exact pins in docs/HANDOFF.md.
 
 ## Git workflow (owner rule)
-- Work on `main` directly: no feature branches, no PRs. Push to `main` only after the full host build and
-  `ctest` pass (and, once they exist, the device build and the fm1-emu smoke test).
+- Work on your own branch. Push to `main` only after good tests: the full host build and `ctest` pass (and, once
+  they exist, the device build and the fm1-emu smoke test).
 
 ## Style
 Terse C11, small functions, comments that say why. Commit by explicit path. Short reports, findings first.
