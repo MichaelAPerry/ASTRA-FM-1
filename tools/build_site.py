@@ -47,6 +47,10 @@ def main():
     report = json.loads((ROOT / "build/emulator/report.json").read_text())
     if report["package_sha256"] != sha: raise SystemExit("Firmware changed since smoke validation")
     shutil.copy2(pkg,site / "firmware/astra-dev.fwsc")
+    subprocess.run(["python3",str(ROOT / "tools/source_archive.py")],check=True)
+    archive = ROOT / "build/astra-source.tar.gz"
+    shutil.copy2(archive,site / "astra-source.tar.gz")
+    shutil.copy2(ROOT / "build/platform/SDK-LICENSE",site / "SDK-LICENSE")
     catalog = dict(default="astra",firmwares=[dict(id="astra",name="ASTRA FM-1 (engineering prototype)",
         version="dev",author="ASTRA contributors",license="GPL-3.0-only",repo="https://github.com/MichaelAPerry/ASTRA-FM-1",
         about="Offline solar longitude and temporary test signal. Not hardware-tested.",package="../firmware/astra-dev.fwsc")])
@@ -57,6 +61,7 @@ def main():
         package="firmware/astra-dev.fwsc",package_sha256=sha,emulator_commit=REV,
         platform_commit="f77bf03283bbb2c05294b01cdad68a30b410f93d",sdk_commit="d179b4484759423312073f5fbb232501aa491047",
         compiler="jieli-linux-toolchains-20260730.1",status="emulator-tested; not hardware-tested",
+        source_archive="astra-source.tar.gz",source_sha256=hashlib.sha256(archive.read_bytes()).hexdigest(),
         smoke=report)
     (site / "manifest.json").write_text(json.dumps(manifest,indent=2)+"\n")
     for name in ("LICENSE","THIRD_PARTY.md"):

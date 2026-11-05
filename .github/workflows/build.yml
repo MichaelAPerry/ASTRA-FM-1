@@ -60,7 +60,6 @@ jobs:
           set -euo pipefail
           python3 tools/build_site.py
           node tests/browser.cjs
-          python3 tools/source_archive.py
           mkdir -p build/release
           cp build/native/astra-dev.fwsc build/native/astra-dev.bin build/astra-source.tar.gz build/release/
           cp build/site/manifest.json build/release/

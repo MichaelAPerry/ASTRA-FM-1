@@ -33,6 +33,9 @@ const server = spawn('python3',['-m','http.server','8765','--bind','127.0.0.1','
       const pkg=await(await fetch(m.package)).arrayBuffer();
       const digest=[...new Uint8Array(await crypto.subtle.digest('SHA-256',pkg))].map(x=>x.toString(16).padStart(2,'0')).join('');
       if(digest!==m.package_sha256) throw Error('package hash mismatch');
+      const src=await(await fetch(m.source_archive)).arrayBuffer();
+      const srcHash=[...new Uint8Array(await crypto.subtle.digest('SHA-256',src))].map(x=>x.toString(16).padStart(2,'0')).join('');
+      if(srcHash!==m.source_sha256) throw Error('matching source archive hash mismatch');
       const catalog=await(await fetch('fm1-emu/firmwares.json')).json();
       if(catalog.firmwares.length!==1 || catalog.firmwares[0].package!=='../'+m.package) throw Error('emulator/download mismatch');
       return m;

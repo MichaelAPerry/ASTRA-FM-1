@@ -24,9 +24,9 @@ def main():
         raise SystemExit("Dinghy dependency has local changes; refusing to build them")
     stage = ROOT / "build/platform"
     stage.mkdir(parents=True, exist_ok=True)
-    for name in ("firmware", "tools", "tests"):
+    for name in ("firmware", "tools", "tests", "assets", "docs"):
         shutil.copytree(source / name, stage / name, dirs_exist_ok=True)
-    for name in ("build.sh", "LICENSE"):
+    for name in ("build.sh", "LICENSE", "LICENSING.md", "README.md"):
         shutil.copy2(source / name, stage / name)
     for name in ("astro.h", "astro.c"):
         shutil.copy2(ROOT / "shared" / name, stage / "firmware/src" / name)
@@ -48,6 +48,7 @@ def main():
     hashes = next(ast.literal_eval(n.value) for n in tree.body if isinstance(n, ast.Assign)
                   and any(isinstance(t, ast.Name) and t.id == "SDK_SHA256" for t in n.targets))
     sdk = Path(os.environ["AC79_SDK"]) / "cpu/wl82/tools"
+    shutil.copy2(Path(os.environ["AC79_SDK"]) / "LICENSE", stage / "SDK-LICENSE")
     for name, expected in hashes.items():
         if hashlib.sha256((sdk / name).read_bytes()).hexdigest() != expected:
             raise SystemExit("SDK checksum mismatch: " + name)
