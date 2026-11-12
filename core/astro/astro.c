@@ -68,9 +68,10 @@ int32_t astro_mul_q30(int32_t a, int32_t s) {
     return ah * sh * 4 + ((ah * (int32_t)sl) >> 14) + (((int32_t)al * sh) >> 14) + (int32_t)((al * sl) >> 30);
 }
 
-static int32_t t_q16(astro_time_t t) { return t.days * 1794 / 1000; }   /* Julian centuries, Q16 (|T| <= 2.2) */
+int32_t astro_t_q16(astro_time_t t) { return t.days * 1794 / 1000; }   /* Julian centuries, Q16 (|T| <= 2.2) */
+static int32_t t_q16(astro_time_t t) { return astro_t_q16(t); }
 
-static astro_bam_t lin(const astro_lin_t *e, astro_time_t t) {
+astro_bam_t astro_lin(const astro_lin_t *e, astro_time_t t) {
     int32_t r = (int32_t)e->ri, tq = t_q16(t), t2;
     uint32_t a = e->a0 + e->ri * (uint32_t)t.days + (uint32_t)((e->rf * t.days) >> 12);
     a += (uint32_t)((r >> 16) * (int32_t)t.frac16 + (int32_t)((((uint32_t)r & 0xFFFFu) * t.frac16) >> 16));
@@ -78,26 +79,26 @@ static astro_bam_t lin(const astro_lin_t *e, astro_time_t t) {
     return a + (uint32_t)((e->t2 * t2) >> 10);
 }
 
-static int32_t nutation(astro_time_t t) {
-    astro_bam_t om = lin(&astro_el[EL_OMEGA], t);
-    return astro_mul_q30(NUT_OM, astro_sin_q30(om)) + astro_mul_q30(NUT_2L, astro_sin_q30(2u * lin(&astro_el[EL_SUN_L0], t)))
-         + astro_mul_q30(NUT_2LP, astro_sin_q30(2u * lin(&astro_el[EL_MOON_LP], t))) + astro_mul_q30(NUT_2OM, astro_sin_q30(2u * om));
+int32_t astro_nutation(astro_time_t t) {
+    astro_bam_t om = astro_lin(&astro_el[EL_OMEGA], t);
+    return astro_mul_q30(NUT_OM, astro_sin_q30(om)) + astro_mul_q30(NUT_2L, astro_sin_q30(2u * astro_lin(&astro_el[EL_SUN_L0], t)))
+         + astro_mul_q30(NUT_2LP, astro_sin_q30(2u * astro_lin(&astro_el[EL_MOON_LP], t))) + astro_mul_q30(NUT_2OM, astro_sin_q30(2u * om));
 }
 
 astro_bam_t astro_sun_lon(astro_time_t t, int apparent) {
-    astro_bam_t l0 = lin(&astro_el[EL_SUN_L0], t), m = lin(&astro_el[EL_SUN_M], t);
+    astro_bam_t l0 = astro_lin(&astro_el[EL_SUN_L0], t), m = astro_lin(&astro_el[EL_SUN_M], t);
     int32_t tq = t_q16(t);
     int32_t c = astro_mul_q30(SUN_C1 + ((SUN_C1T * (tq >> 4)) >> 12), astro_sin_q30(m))
               + astro_mul_q30(SUN_C2 + ((SUN_C2T * (tq >> 4)) >> 12), astro_sin_q30(2u * m))
               + astro_mul_q30(SUN_C3, astro_sin_q30(3u * m));
     astro_bam_t l = l0 + (uint32_t)c;
-    if (apparent) l += (uint32_t)(SUN_ABERR + nutation(t));
+    if (apparent) l += (uint32_t)(SUN_ABERR + astro_nutation(t));
     return l;
 }
 
 astro_bam_t astro_moon_lon(astro_time_t t, int apparent) {
-    astro_bam_t lp = lin(&astro_el[EL_MOON_LP], t), d = lin(&astro_el[EL_MOON_D], t), m = lin(&astro_el[EL_MOON_M], t);
-    astro_bam_t mp = lin(&astro_el[EL_MOON_MP], t), f = lin(&astro_el[EL_MOON_F], t);
+    astro_bam_t lp = astro_lin(&astro_el[EL_MOON_LP], t), d = astro_lin(&astro_el[EL_MOON_D], t), m = astro_lin(&astro_el[EL_MOON_M], t);
+    astro_bam_t mp = astro_lin(&astro_el[EL_MOON_MP], t), f = astro_lin(&astro_el[EL_MOON_F], t);
     int32_t tq = t_q16(t), e1 = 0x40000000 - ((84420 * (tq >> 4)) >> 7), e2 = astro_mul_q30(e1, e1), sum = 0;
     uint32_t i;
     for (i = 0; i < sizeof moon_terms / sizeof moon_terms[0]; i++) {
@@ -106,12 +107,39 @@ astro_bam_t astro_moon_lon(astro_time_t t, int apparent) {
         int32_t amp = k->m == 0 ? k->amp : astro_mul_q30(k->amp, k->m == 1 || k->m == -1 ? e1 : e2);
         sum += astro_mul_q30(amp, astro_sin_q30(arg));
     }
-    sum += astro_mul_q30(MOON_A1T, astro_sin_q30(lin(&astro_el[EL_MOON_A1], t)))
+    sum += astro_mul_q30(MOON_A1T, astro_sin_q30(astro_lin(&astro_el[EL_MOON_A1], t)))
          + astro_mul_q30(MOON_LFT, astro_sin_q30(lp - f))
-         + astro_mul_q30(MOON_A2T, astro_sin_q30(lin(&astro_el[EL_MOON_A2], t)));
+         + astro_mul_q30(MOON_A2T, astro_sin_q30(astro_lin(&astro_el[EL_MOON_A2], t)));
     lp += (uint32_t)sum;
-    if (apparent) lp += (uint32_t)nutation(t);
+    if (apparent) lp += (uint32_t)astro_nutation(t);
     return lp;
+}
+
+astro_bam_t astro_mean_node(astro_time_t t) { return astro_lin(&astro_el[EL_OMEGA], t); }
+astro_bam_t astro_sun_mean_lon(astro_time_t t) { return astro_lin(&astro_el[EL_SUN_L0], t); }
+
+/* (a * b) >> k, 0 < k < 32, for any a and b whose result fits: by 16-bit limbs, so no 64-bit arithmetic */
+int32_t astro_mulq(int32_t a, int32_t b, unsigned k) {
+    uint32_t ua = a < 0 ? 0u - (uint32_t)a : (uint32_t)a, ub = b < 0 ? 0u - (uint32_t)b : (uint32_t)b;
+    uint32_t al = ua & 0xFFFFu, ah = ua >> 16, bl = ub & 0xFFFFu, bh = ub >> 16;
+    uint32_t p0 = al * bl, p1 = al * bh, p2 = ah * bl, mid = (p0 >> 16) + (p1 & 0xFFFFu) + (p2 & 0xFFFFu);
+    uint32_t hi = ah * bh + (p1 >> 16) + (p2 >> 16) + (mid >> 16), lo = (mid << 16) | (p0 & 0xFFFFu);
+    uint32_t r = (hi << (32u - k)) | (lo >> k);
+    return (a ^ b) < 0 ? -(int32_t)r : (int32_t)r;
+}
+/* (a << k) / b by long division, for any a and b != 0 whose result fits */
+int32_t astro_divq(int32_t a, int32_t b, unsigned k) {
+    uint32_t ua = a < 0 ? 0u - (uint32_t)a : (uint32_t)a, ub = b < 0 ? 0u - (uint32_t)b : (uint32_t)b, q, r;
+    if (!ub) return 0;
+    q = ua / ub; r = ua % ub;
+    while (k--) { q <<= 1; r <<= 1; if (r >= ub) { r -= ub; q |= 1u; } }
+    return (a ^ b) < 0 ? -(int32_t)q : (int32_t)q;
+}
+uint32_t astro_isqrt(uint32_t v) {              /* floor(sqrt(v)) */
+    uint32_t r = 0, b = 1u << 30;
+    while (b > v) b >>= 2;
+    while (b) { if (v >= r + b) { v -= r + b; r = (r >> 1) + b; } else r >>= 1; b >>= 2; }
+    return r;
 }
 
 uint32_t astro_sign(astro_bam_t a) { return (((a >> 16) * 21600u) >> 16) / 1800u; }
