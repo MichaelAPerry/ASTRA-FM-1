@@ -24,6 +24,8 @@
   `FM1_BENCH_NOKEYS` clears the script. fm1-emu's `--keys` takes ranges. Under FM1_STRICT, MIDI-in events at 0.4 s did
   not arrive (keys did); not investigated.
 - The emulator's WAV starts when the firmware starts its audio, not at boot: the gate times audio from the first sound.
+- CI fetches only the SDK's three files, pinned to the commit and SHA-256 checked (`tools/get_sdk.sh`): a Pages run
+  (43328006044) stalled 18+ minutes in the old full gitee clone and was cancelled. Jobs now have time limits.
 - Gemini's graphics drop (`astra_fm1_op1_gfx.zip`, 2026-11-12) did not compile as given (a `'''` literal) and had: glyph
   circles drawn at the wrong x, the Moon glyph a plain disc, a dark full Moon, doubled strokes smudging 1× text.
   All fixed; dropped facts restored (Porphyry fallback, solar houses, no birth data, feedback rings, ±30 D, globe meridians).

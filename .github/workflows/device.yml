@@ -15,6 +15,7 @@ env:
 jobs:
   build-and-emulate:
     runs-on: ubuntu-24.04
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
       - name: Host build (the gate's expected values come from it)
@@ -27,16 +28,10 @@ jobs:
           set -euo pipefail
           python3 -m pip install -q Pillow
           mkdir -p "$RUNNER_TEMP/tc" && cd "$RUNNER_TEMP/tc"
-          curl -fL --retry 3 https://pkgman.jieliapp.com/s/linux-toolchain | tar -xJ
+          curl -fL --retry 3 --connect-timeout 30 --max-time 600 https://pkgman.jieliapp.com/s/linux-toolchain | tar -xJ
           echo "JIELI_TOOLCHAIN=$(find "$RUNNER_TEMP/tc" -maxdepth 1 -mindepth 1 -type d | head -n 1)" >> "$GITHUB_ENV"
           sdk="$RUNNER_TEMP/ac79sdk"
-          for i in 1 2 3 4; do
-            rm -rf "$sdk"
-            git clone -q --depth 1 --branch "$AC79_SDK_TAG" https://gitee.com/Jieli-Tech/fw-AC79_AIoT_SDK.git "$sdk" && break
-            [ "$i" = 4 ] && { echo "SDK clone failed"; exit 1; }
-            sleep $((i * 10))
-          done
-          test "$(git -C "$sdk" rev-parse HEAD)" = "$AC79_SDK_COMMIT"
+          tools/get_sdk.sh "$sdk"            # three files, pinned and SHA-256 checked; a time-limited clone only as fallback
           echo "AC79_SDK=$sdk" >> "$GITHUB_ENV"
       - name: Firmware (.fwsc)
         run: |
