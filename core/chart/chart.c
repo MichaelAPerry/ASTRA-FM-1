@@ -119,9 +119,10 @@ void chart_read_transit(const chart_t *sky, const chart_t *natal, const chart_as
     case 1: put(&w, BODY_WORD[a->a]); put(&w, " "); put(&w, ASPECT_VERB[a->kind]); put(&w, " "); put(&w, BODY_WORD[a->b]); break;
     case 2: put(&w, "FROM "); put(&w, HOUSE_WORD[astro_house_of(&natal->h, sky->lon[a->a])]); put(&w, " TO "); put(&w, HOUSE_WORD[natal->house[a->b]]); break;
     default:
-        am = (uint32_t)(((a->err < 0 ? -a->err : a->err) >> 8) * 675) >> 15;   /* arcminutes: BAM * 21600 / 2^32 */
-        put(&w, a->applying ? "APPLYING " : "SEPARATING "); put_n(&w, am / 60u); put(&w, "D"); put_n(&w, am % 60u);
-        if (a->days_q4 < 16 * 400) { put(&w, a->applying ? " EXACT IN " : " EXACT "); put_n(&w, (uint32_t)(a->days_q4 + 8) / 16u); put(&w, a->applying ? " DAYS" : " DAYS AGO"); }
+        am = (uint32_t)(((a->err < 0 ? -a->err : a->err) >> 8) * 675) >> 19;   /* arcminutes: BAM * 21600 / 2^32 */
+        put(&w, a->applying ? "APPLYING " : "SEPARATING "); put_n(&w, am / 60u); put(&w, "^"); put_n(&w, am % 60u); put(&w, "'");   /* (^: the degree sign) */
+        if (a->days_q4 < 8) put(&w, " EXACT TODAY");
+        else if (a->days_q4 < 16 * 400) { put(&w, a->applying ? " EXACT IN " : " EXACT "); put_n(&w, (uint32_t)(a->days_q4 + 8) / 16u); put(&w, a->applying ? " D" : " D AGO"); }
     }
     if (n) *w.p = 0;
 }
