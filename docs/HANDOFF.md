@@ -12,7 +12,7 @@
 | Firmware `native/astra.c` on Dinghy f77bf03 | Builds (image 83,824 B of 581,564; RAM 62,780 of 98,304; pool 250,368 of 344,064); Emulator-tested. **Not Hardware-tested** |
 | `tools/emu_smoke.sh` (CI): controls, state, astronomy bit for bit, silence then the key's pitch, screens, a dial's colour | Passing locally on the real package (fm1-emu 9de1ef0) |
 | `tools/emu_cpu.sh` (CI): interrupt on fm1-live FM1_STRICT, under 60 % | Passing locally (54 %) |
-| Site `site/` + `tools/site_emu.sh`, `site_front.sh`, `site_shots.sh`, `.github/workflows/pages.yml` (MIKU's pipeline: the page installs exactly what its emulator runs; identity asserted `FM-1_44`) | **Published**: Pages run 43322931207 (ec95b2b) green and looked at: https://michaelaperry.github.io/ASTRA-FM-1/ serves the package (SHA-256 matches), the installer reports `FM-1_44000000` ready, the emulator boots ASTRA in Chromium. Each later Pages run to be looked at |
+| Site `site/` + `tools/site_emu.sh`, `site_front.sh`, `site_shots.sh`, `.github/workflows/pages.yml` (MIKU's pipeline: the page installs exactly what its emulator runs; identity asserted `FM-1_44`) | **Published**: Pages runs 43322931207 (ec95b2b) and 43325598056 (1dc46b6, 4 voices) green and looked at: https://michaelaperry.github.io/ASTRA-FM-1/ serves the package (SHA-256 matches), the installer reports `FM-1_44000000` ready, the emulator boots ASTRA in Chromium. Each later Pages run to be looked at |
 | Release / attestation (`release.yml`, `zvenson/fm1-build`) | Not started (D15: after a first hardware test) |
 | Companion chart in the browser (WASM core, D6) | Not started |
 

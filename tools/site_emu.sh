@@ -13,7 +13,16 @@ git -C "$EMU" -c advice.detachedHead=false checkout -q "$REV"
 rustup target add wasm32-unknown-unknown >/dev/null 2>&1 || true
 bash "$EMU/web/build.sh" "$(cd "$SITE" && pwd)/fm1-emu"
 cp "$EMU/LICENSE" "$SITE/fm1-emu/LICENSE"
-rm -rf "$SITE/fm1-emu/smk37"                    # (the SMK-37 page: not this firmware's board)
+# the SMK-37 page: not this firmware's board. An empty catalog (the FM-1 page reads it for its SMK-37 links) and a
+# note where the emulator's SMK-37 tab points, so neither is a 404
+rm -rf "$SITE/fm1-emu/smk37" && mkdir -p "$SITE/fm1-emu/smk37"
+echo '{"note": "ASTRA FM-1 is built for the FM-1 only.", "firmwares": []}' > "$SITE/fm1-emu/smk37/firmwares.json"
+cat > "$SITE/fm1-emu/smk37/index.html" <<'HTML'
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ASTRA FM-1: FM-1 only</title><link rel="stylesheet" href="../../site.css"></head>
+<body><main><section class="card"><h2>FM-1 only.</h2><p>ASTRA FM-1 is built and tested for the M-VAVE FM-1, not the SMK-37.</p>
+<p><a class="btn" href="../?mhz=240">Back to the FM-1 emulator</a> <a class="btn alt" href="../../">ASTRA FM-1</a></p></section></main></body></html>
+HTML
 python3 - "$SITE/fm1-emu/firmwares.json" "$V" <<'PY'
 import json, sys
 json.dump({"note": "ASTRA FM-1 only: the firmware package this site installs, emulated.", "default": "astra",
