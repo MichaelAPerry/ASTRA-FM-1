@@ -8,7 +8,7 @@
 #     Engine; the device subtracts the Sun's barycentric offset, which it gets from its own Jupiter..Neptune.
 #   - the CORDIC arctangent table, precession (IAU 2006), obliquity, sidereal time, the Lahiri ayanamsa.
 # Units: angles BAM (2^32 = 360 deg), distances AU in Q25, rates BAM per day (integer + /4096 fraction).
-#   python3 tools/gen_planet_tables.py
+#   pip install astronomy-engine==2.1.19 && python3 tools/gen_planet_tables.py   (CI checks the header is fresh with this version)
 import math, pathlib
 import astronomy as A
 import astronomy.astronomy as AI

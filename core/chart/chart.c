@@ -102,8 +102,8 @@ static const char *const HOUSE_WORD[12] = {"SELF", "MEANS", "WORDS", "HOME", "PL
 static const char *const SIGN_WORD[12] = {"BOLD", "STEADY", "CURIOUS", "PROTECTIVE", "PROUD", "PRECISE", "FAIR", "INTENSE", "FREE", "PATIENT", "ORIGINAL", "FLUID"};
 
 typedef struct { char *p, *end; } wr_t;
-static void put(wr_t *w, const char *s) { while (*s && w->p < w->end) *w->p++ = *s++; }
-static void put_n(wr_t *w, uint32_t v) {
+static void wput(wr_t *w, const char *s) { while (*s && w->p < w->end) *w->p++ = *s++; }
+static void wput_n(wr_t *w, uint32_t v) {
     char t[10];
     uint32_t i = 0;
     do { t[i++] = (char)('0' + v % 10u); v /= 10u; } while (v);
@@ -115,14 +115,14 @@ void chart_read_transit(const chart_t *sky, const chart_t *natal, const chart_as
     uint32_t am;
     w.p = out; w.end = out + (n ? n - 1u : 0u);
     switch (line) {
-    case 0: put(&w, chart_body_name[a->a]); put(&w, " "); put(&w, chart_aspect_name[a->kind]); put(&w, " "); put(&w, chart_body_name[a->b]); break;
-    case 1: put(&w, BODY_WORD[a->a]); put(&w, " "); put(&w, ASPECT_VERB[a->kind]); put(&w, " "); put(&w, BODY_WORD[a->b]); break;
-    case 2: put(&w, "FROM "); put(&w, HOUSE_WORD[astro_house_of(&natal->h, sky->lon[a->a])]); put(&w, " TO "); put(&w, HOUSE_WORD[natal->house[a->b]]); break;
+    case 0: wput(&w, chart_body_name[a->a]); wput(&w, " "); wput(&w, chart_aspect_name[a->kind]); wput(&w, " "); wput(&w, chart_body_name[a->b]); break;
+    case 1: wput(&w, BODY_WORD[a->a]); wput(&w, " "); wput(&w, ASPECT_VERB[a->kind]); wput(&w, " "); wput(&w, BODY_WORD[a->b]); break;
+    case 2: wput(&w, "FROM "); wput(&w, HOUSE_WORD[astro_house_of(&natal->h, sky->lon[a->a])]); wput(&w, " TO "); wput(&w, HOUSE_WORD[natal->house[a->b]]); break;
     default:
         am = (uint32_t)(((a->err < 0 ? -a->err : a->err) >> 8) * 675) >> 19;   /* arcminutes: BAM * 21600 / 2^32 */
-        put(&w, a->applying ? "APPLYING " : "SEPARATING "); put_n(&w, am / 60u); put(&w, "^"); put_n(&w, am % 60u); put(&w, "'");   /* (^: the degree sign) */
-        if (a->days_q4 < 8) put(&w, " EXACT TODAY");
-        else if (a->days_q4 < 16 * 400) { put(&w, a->applying ? " EXACT IN " : " EXACT "); put_n(&w, (uint32_t)(a->days_q4 + 8) / 16u); put(&w, a->applying ? " D" : " D AGO"); }
+        wput(&w, a->applying ? "APPLYING " : "SEPARATING "); wput_n(&w, am / 60u); wput(&w, "^"); wput_n(&w, am % 60u); wput(&w, "'");   /* (^: the degree sign) */
+        if (a->days_q4 < 8) wput(&w, " EXACT TODAY");
+        else if (a->days_q4 < 16 * 400) { wput(&w, a->applying ? " EXACT IN " : " EXACT "); wput_n(&w, (uint32_t)(a->days_q4 + 8) / 16u); wput(&w, a->applying ? " D" : " D AGO"); }
     }
     if (n) *w.p = 0;
 }
@@ -133,12 +133,12 @@ void chart_read_place(const chart_t *c, unsigned body, unsigned line, char *out,
     int dg = chart_dignity(body, sg);
     w.p = out; w.end = out + (n ? n - 1u : 0u);
     switch (line) {
-    case 0: put(&w, chart_body_name[body]); put(&w, " IN "); put(&w, chart_sign_name[sg]); break;
-    case 1: put(&w, BODY_WORD[body]); put(&w, " IS "); put(&w, SIGN_WORD[sg]); break;
-    case 2: put(&w, c->solar ? "SOLAR HOUSE " : "HOUSE "); put_n(&w, c->house[body] + 1u); put(&w, " "); put(&w, HOUSE_WORD[c->house[body]]); break;
+    case 0: wput(&w, chart_body_name[body]); wput(&w, " IN "); wput(&w, chart_sign_name[sg]); break;
+    case 1: wput(&w, BODY_WORD[body]); wput(&w, " IS "); wput(&w, SIGN_WORD[sg]); break;
+    case 2: wput(&w, c->solar ? "SOLAR HOUSE " : "HOUSE "); wput_n(&w, c->house[body] + 1u); wput(&w, " "); wput(&w, HOUSE_WORD[c->house[body]]); break;
     default:
-        put(&w, dg == 2 ? "AT HOME: STRONG" : dg == 1 ? "EXALTED: HONOURED" : dg == -1 ? "IN FALL: HUMBLED" : dg == -2 ? "IN DETRIMENT: STRAINED" : "");
-        if (c->sky.spd[body] < 0 && body != ASTRO_NODE) put(&w, dg ? " RETROGRADE" : "RETROGRADE: TURNED INWARD");
+        wput(&w, dg == 2 ? "AT HOME: STRONG" : dg == 1 ? "EXALTED: HONOURED" : dg == -1 ? "IN FALL: HUMBLED" : dg == -2 ? "IN DETRIMENT: STRAINED" : "");
+        if (c->sky.spd[body] < 0 && body != ASTRO_NODE) wput(&w, dg ? " RETROGRADE" : "RETROGRADE: TURNED INWARD");
     }
     if (n) *w.p = 0;
 }

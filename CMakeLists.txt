@@ -46,7 +46,7 @@ target_link_libraries(ui_shot PRIVATE astra_core)
 add_executable(emu_expect tests/emu_expect.c)
 target_link_libraries(emu_expect PRIVATE astra_core)
 add_test(NAME emu_expect_j2000 COMMAND emu_expect 10957 43200)
-set_tests_properties(emu_expect_j2000 PROPERTIES PASS_REGULAR_EXPRESSION "^c76067cf 9ecf3a3d 64")   # J2000.0: Sun 280.37, Moon 223.33 (Scorpio)
+set_tests_properties(emu_expect_j2000 PROPERTIES PASS_REGULAR_EXPRESSION "^c75f8c80 9ecf3a3d c157dba7 ")   # J2000.0: Sun 280.37, Moon 223.32, Mercury 271.89
 # generated tables must match their generator
 find_package(Python3 COMPONENTS Interpreter)
 if(Python3_FOUND)

@@ -1,24 +1,16 @@
 /* SPDX-License-Identifier: GPL-3.0-only
- * The host side of the emulator gate (tools/emu_smoke.sh): for a UTC instant as the firmware holds it (days from
- * 1970-01-01, seconds of the day), print what core/astro gives here: the Sun's and the Moon's longitude (BAM, hex) and
- * the TEMPORARY test tone's MIDI note. The firmware runs the same source, so the two must agree to the bit.
- *   emu_expect DAYS SEC  ->  "SUN MOON NOTE"   e.g. "8c2f... 1a7b... 62" */
+ * The host side of the emulator gate (tools/emu_smoke.sh): what core/astro gives for a UT instant, to compare with
+ * what the firmware computed in fm1-emu, bit for bit.
+ *   emu_expect DAYS_FROM_1970 SECONDS  ->  the eleven longitudes (Sun..Pluto, Node), hex BAM */
 #include <stdio.h>
 #include <stdlib.h>
-#include "core/astro/astro.h"
+#include "core/chart/chart.h"
 
 int main(int argc, char **argv) {
-    int32_t y, days;
-    uint32_t m, d, sec;
-    astro_time_t t;
-    astro_bam_t moon;
-    if (argc != 3) { fprintf(stderr, "usage: emu_expect DAYS SEC\n"); return 2; }
-    days = (int32_t)strtol(argv[1], 0, 0);
-    sec = (uint32_t)strtoul(argv[2], 0, 0);
-    if (sec >= 86400u) { fprintf(stderr, "emu_expect: SEC >= 86400\n"); return 2; }
-    astro_civil_from_days(days, &y, &m, &d);
-    t = astro_time_utc(y, m, d, sec / 3600u, sec / 60u % 60u, sec % 60u);
-    moon = astro_moon_lon(t, 1);
-    printf("%08x %08x %u\n", (unsigned)astro_sun_lon(t, 1), (unsigned)moon, 57u + astro_sign(moon));   /* 57: astra.c TONE_BASE */
+    static chart_t c;
+    unsigned i;
+    if (argc != 3) { fprintf(stderr, "usage: emu_expect DAYS_FROM_1970 SECONDS\n"); return 2; }
+    chart_cast(&c, (int32_t)strtol(argv[1], 0, 10), (uint32_t)strtoul(argv[2], 0, 10), 0, 0, 0, 0, 0);
+    for (i = 0; i < ASTRO_NBODY; i++) printf("%08x%c", (unsigned)c.sky.lon[i], i + 1 < ASTRO_NBODY ? ' ' : '\n');
     return 0;
 }

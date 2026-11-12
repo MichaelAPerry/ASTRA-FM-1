@@ -20,8 +20,11 @@ git fetch --depth 1 origin "$DINGHY_COMMIT"
 git checkout -q --detach "$DINGHY_COMMIT"
 cp "$ROOT/native/astra.c" firmware/src/dinghy.c
 # core/ keeps its repo path: astra.c includes "core/astro/astro.c" (-Ifirmware/src finds it)
-mkdir -p firmware/src/core/astro
-cp "$ROOT"/core/astro/astro.[ch] "$ROOT"/core/astro/astro_tables.h firmware/src/core/astro/
+rm -rf firmware/src/core
+for d in astro fm chart synth ui app; do
+    mkdir -p "firmware/src/core/$d"
+    cp "$ROOT/core/$d"/*.[ch] "firmware/src/core/$d/"
+done
 python3 - <<'PY'
 from pathlib import Path
 p=Path('tools/build.py')
@@ -32,7 +35,7 @@ def sub(a,b):
     s=s.replace(a,b)
 sub('SCREEN_NAME = "DINGHY"','SCREEN_NAME = "ASTRA"')
 sub('DATA_FAMILY = "DINGHY"','DATA_FAMILY = "ASTRA"')
-sub('SCREEN_COLOUR = 0xB47F','SCREEN_COLOUR = 0x955F')   # RGB(150,170,255), astra.c's C_ACC
+sub('SCREEN_COLOUR = 0xB47F','SCREEN_COLOUR = 0x955F')   # RGB(150,170,255)
 sub('BOARD_PREFIX = {"fm1": "FM-1_99",','BOARD_PREFIX = {"fm1": "FM-1_44",')
 # identity: FM-1_44XXYYZZ (dev: 000000), version X.Y or X.Y.Z, 0-99 each. 44: unused by the 151 decodable packages of
 # fm1-emu's hub catalog and in public GitHub code (checked 2026-11-05)

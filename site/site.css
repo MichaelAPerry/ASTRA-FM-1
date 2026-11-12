@@ -1,0 +1,52 @@
+/* SPDX-License-Identifier: GPL-3.0-only
+ * ASTRA FM-1's site: the firmware's own look (charcoal ground, instrument panels, one hue per body). */
+:root{--bg:#0b0d11;--panel:#141820;--line:#262d3a;--fg:#eef2fa;--dim:#9aa6bd;--sun:#f9c74f;--moon:#bfe3ff;--mars:#ff5a4f;
+  --venus:#7cf29a;--jup:#ff4fa8;--nep:#5aa8ff;--r:16px;color-scheme:dark;font:17px/1.6 "Inter","Segoe UI",system-ui,sans-serif}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;color:var(--fg);background:var(--bg)}
+body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background:radial-gradient(circle at 18% 12%,#1c2a4a55 0,transparent 40%),radial-gradient(circle at 85% 60%,#3a1c4a44 0,transparent 45%)}
+a{color:var(--moon)}a:hover{color:var(--sun)}
+main{max-width:1080px;margin:auto;padding:0 clamp(16px,4vw,40px) 60px}
+h1,h2,h3{line-height:1.1;letter-spacing:-.02em;margin:0 0 .4em}
+h2{font-size:clamp(1.7rem,4.5vw,2.6rem)}h3{font-size:1.2rem}
+p{max-width:72ch}
+code{background:#06080c;padding:2px 6px;border-radius:6px;font-size:.85em;word-break:break-all}
+.label{font-size:.78rem;letter-spacing:.16em;text-transform:uppercase;color:var(--sun);margin:0 0 .6em;font-weight:700}
+.label b{color:var(--jup)}
+.note{color:var(--dim);font-size:.92rem}
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 0;font-size:.9rem;flex-wrap:wrap}
+.top nav a{margin-left:16px;color:var(--dim);text-decoration:none}.top nav a:hover{color:var(--sun)}
+.brand{font-weight:800;letter-spacing:.04em}.brand span{color:var(--sun)}
+.hero{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:clamp(18px,4vw,48px);align-items:center;
+  background:var(--panel);border:1px solid var(--line);border-radius:28px;padding:clamp(22px,5vw,56px);margin-top:4px}
+.hero h1{font-size:clamp(3rem,10vw,5.6rem);margin:.05em 0 .15em;letter-spacing:.02em}.hero h1 span{color:var(--sun)}
+.tag{font-size:1.15rem;margin:.2em 0}.tag.dim{color:var(--dim)}
+.hero .screen{width:100%;max-width:360px;justify-self:center}
+@media (max-width:760px){.hero{grid-template-columns:1fr}}
+.btns{display:flex;flex-wrap:wrap;gap:10px;margin-top:20px}
+.btn{display:inline-block;border:0;cursor:pointer;font:inherit;font-weight:750;font-size:.95rem;text-decoration:none;
+  background:var(--sun);color:#14100a;padding:12px 18px;border-radius:12px}
+.btn:hover{background:var(--moon);color:#0b0d11}
+.btn.alt{background:#1b2130;color:var(--fg);border:1px solid var(--line)}.btn.alt:hover{border-color:var(--sun)}
+.btn:disabled{opacity:.35;cursor:default}
+section{margin-top:72px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:clamp(18px,3vw,30px)}
+.grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr))}
+.screen,.shot img{display:block;width:100%;aspect-ratio:1;image-rendering:pixelated;border-radius:14px;border:3px solid #050608;
+  box-shadow:0 0 0 1px var(--line),0 10px 30px #0008;background:#050608}
+.shot{margin:0}.shot figcaption{font-size:.9rem;color:var(--dim);margin-top:8px}.shot figcaption b{color:var(--fg)}
+.num{font-size:.8rem;letter-spacing:.14em;color:var(--jup);font-weight:800}
+.feat h3{margin-top:.3em}.feat p{color:var(--dim);margin:0}
+.emu{width:100%;height:min(92vh,860px);border:1px solid var(--line);border-radius:var(--r);background:#000;margin-top:12px}
+table{border-collapse:collapse;width:100%;font-size:.92rem}td,th{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}
+th{color:var(--sun);font-weight:700}
+.warnbox{border-left:3px solid var(--mars);padding-left:12px}
+footer{margin-top:80px;color:var(--dim);font-size:.82rem;border-top:1px solid var(--line);padding-top:18px}
+/* installer */
+.inst main{max-width:760px}
+.crumb{display:flex;justify-content:space-between;padding-top:14px;font-size:.9rem}
+progress{width:100%;height:10px;accent-color:var(--sun)}
+#status{min-height:1.6em;font-weight:650}
+pre{white-space:pre-wrap;font-size:.75rem;max-height:240px;overflow:auto;background:#06080c;padding:10px;border-radius:8px}

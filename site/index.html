@@ -1,0 +1,156 @@
+<!doctype html>
+<!-- SPDX-License-Identifier: GPL-3.0-only -->
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ASTRA FM-1 · the sky as an FM synthesizer</title>
+<meta name="description" content="ASTRA FM-1: a free firmware for the M-VAVE FM-1. It computes the planets itself, casts your birth chart, and wires a ten-operator FM synthesizer from the aspects between them. Play it in your browser, install it over USB.">
+<meta property="og:title" content="ASTRA FM-1 · the sky as an FM synthesizer">
+<meta property="og:description" content="Ten planets, ten FM operators: the aspects of your chart are the algorithm. A free firmware for the M-VAVE FM-1.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="media/screens/wheel.png">
+<link rel="icon" href="media/favicon.png">
+<link rel="stylesheet" href="site.css">
+</head>
+<body><main>
+<div class="top">
+  <div class="brand">ASTRA <span>FM-1</span> {{VERSION}}</div>
+  <nav><a href="#play">Play</a><a href="#engine">Engine</a><a href="#screens">Screens</a><a href="#controls">Controls</a><a href="#sky">Sky</a><a href="#install">Install</a></nav>
+</div>
+
+<header class="hero">
+  <div>
+    <p class="label">FM SYNTHESIS · ASTRONOMY · M-VAVE FM-1 · {{VERSION}}</p>
+    <h1>ASTRA<span>.</span></h1>
+    <p class="tag">Ten planets. Ten FM operators. The aspects between them are the algorithm.</p>
+    <p class="tag dim">Your FM-1 computes the sky itself, casts your birth chart, and wires its synthesizer from it: every
+      trine a modulation, every square a ring, every return to a birth place a feedback loop. Turn the sky and the sound turns with it.</p>
+    <div class="btns">
+      <a class="btn" href="#play">Play in your browser ▶</a>
+      <a class="btn alt" href="#engine">How it sounds the sky ↓</a>
+      <a class="btn alt" href="#install">Install {{VERSION}} ↓</a>
+    </div>
+  </div>
+  <img class="screen" src="media/screens/wheel.png" alt="The wheel page: the zodiac ring, the bodies, and coloured wires between them">
+</header>
+
+<section id="play">
+  <p class="label"><b>01</b> / PLAY IT HERE</p>
+  <h2>The firmware itself, in the browser.</h2>
+  <p>This is the installable package running in <a href="https://github.com/joakimeriksson/fm1-emu">fm1-emu</a>, an emulator of the
+    FM-1's chip. Click it, hold a few keys, then turn the ALGORITHM encoder: the wires on the wheel change, and so does the sound.
+    <b>GLO</b> sets the clock and your birth data; <b>SEQ</b> reads the transits.</p>
+  <iframe class="emu" src="fm1-emu/" title="ASTRA FM-1 in the fm1-emu emulator" loading="lazy" allow="autoplay"></iframe>
+  <p class="note"><a href="fm1-emu/">Open the emulator on its own page ↗</a> · The browser emulator is not a measure of the FM-1's CPU.</p>
+</section>
+
+<section id="engine">
+  <p class="label"><b>02</b> / THE ENGINE</p>
+  <h2>A chart is a patch.</h2>
+  <p class="note">Three voices of ten operators each (thirty operators every sample), rendered by the FM-1 itself in integer arithmetic, 44.1 kHz. Each operator is a body:
+    Sun, Moon, Mercury, Venus, Mars, Jupiter, Saturn, Uranus, Neptune, Pluto.</p>
+  <div class="grid">
+    <div class="card feat"><span class="num">WIRES</span><h3>Aspects route the operators.</h3><p>Conjunctions modulate deeply, trines flow, sextiles touch lightly,
+      squares ring-modulate, oppositions loop both ways. The faster body modulates the slower; a closer aspect cuts deeper; an applying one deeper than a separating one; a retrograde source inverts.</p></div>
+    <div class="card feat"><span class="num">37 ALGORITHMS</span><h3>One sky, many wirings.</h3><p>Free wiring, or the birth chart, the sky now, or the transits
+      between them, each in twelve harmonic charts (longitudes times 1 to 12): every harmonic finds other aspects, so other routes.</p></div>
+    <div class="card feat"><span class="num">TIMBRE</span><h3>Placements voice the operators.</h3><p>Ratio from the solar house, detune from the degree,
+      waveform from the element, envelope from the modality, level from dignity, feedback from domicile and retrograde. A cast patch is a starting point: every value has its knob.</p></div>
+    <div class="card feat"><span class="num">MOTION</span><h3>The sky keeps moving.</h3><p>The sky clock runs at real time, or up to five years a second,
+      forward or back. Each operator swells as its planet returns to its birth place. The wheel is the stereo field: the ascendant left, the descendant right.</p></div>
+    <div class="card feat"><span class="num">ANY LOOP</span><h3>No topology is special.</h3><p>Every operator hears two phase sources, one ring source and its own feedback,
+      from any operator. Every loop is one sample long, so any wiring the sky makes is stable, and the cost never changes.</p></div>
+    <div class="card feat"><span class="num">EFFECTS</span><h3>Chorus, echo, room.</h3><p>A swept stereo chorus, a cross-fed tape echo that glides when you change it,
+      a four-line reverb, and a soft knee into full scale. The audio interrupt stays under half of its 5.8 ms, measured on the FM-1's own instruction costs.</p></div>
+  </div>
+</section>
+
+<section id="screens">
+  <p class="label"><b>03</b> / SCREENS</p>
+  <h2>Waves and line art, not numbers.</h2>
+  <p class="note">Captured from the firmware running in fm1-emu. Every knob turn changes a colour somewhere: tested on every page.</p>
+  <div class="grid">
+    <figure class="shot"><img src="media/screens/wheel.png" alt="WHEEL page" loading="lazy"><figcaption><b>WHEEL</b> · HOME · the chart, its wires, the ring shaken by the sound</figcaption></figure>
+    <figure class="shot"><img src="media/screens/operator.png" alt="OPERATOR page" loading="lazy"><figcaption><b>OPERATOR</b> · EDIT · one body: its wave as the wires make it, who it listens to</figcaption></figure>
+    <figure class="shot"><img src="media/screens/envelope.png" alt="ENVELOPE page" loading="lazy"><figcaption><b>ENVELOPE</b> · ENV · all ten shapes, the selected one filled</figcaption></figure>
+    <figure class="shot"><img src="media/screens/motion.png" alt="MOTION page" loading="lazy"><figcaption><b>MOTION</b> · LFO · the orrery and the sky clock</figcaption></figure>
+    <figure class="shot"><img src="media/screens/effects.png" alt="EFFECTS page" loading="lazy"><figcaption><b>EFFECTS</b> · FX · chorus lines, echoes, the room</figcaption></figure>
+    <figure class="shot"><img src="media/screens/transits.png" alt="HOROSCOPE page" loading="lazy"><figcaption><b>HOROSCOPE</b> · SEQ · transits, closest first, and their reading</figcaption></figure>
+    <figure class="shot"><img src="media/screens/month.png" alt="THE MONTH page" loading="lazy"><figcaption><b>THE MONTH</b> · SEQ · thirty days either side, aspect by aspect</figcaption></figure>
+    <figure class="shot"><img src="media/screens/clock.png" alt="CLOCK page" loading="lazy"><figcaption><b>NOW</b> · GLO · the clock: never called now until you set it</figcaption></figure>
+  </div>
+</section>
+
+<section id="controls">
+  <p class="label"><b>04</b> / CONTROLS</p>
+  <h2>Every control, one page each.</h2>
+  <div class="card">
+  <table>
+    <tr><th>Control</th><th>What it does</th></tr>
+    <tr><td><b>HOME</b></td><td>The wheel: KNOB 1–4 = modulation index, ring depth, orb, and the sky's day.</td></tr>
+    <tr><td><b>EDIT</b></td><td>The operator SELECT holds, four pages (press again): ratio, fine, level, feedback · wave, output, detune, velocity · free wires · ring source, ring, key scaling, mute.</td></tr>
+    <tr><td><b>ENV</b> · <b>LFO</b> · <b>FX</b></td><td>Envelope · motion (sky clock warp, orbit, stereo width, volume; LFO and bend) · effects (chorus, echo, room).</td></tr>
+    <tr><td><b>SEQ</b></td><td>The horoscope: transits, the month around, the birth chart, the Moon and signs. KNOB 1–3 move the sky by days, months, years; 4 sets the orb.</td></tr>
+    <tr><td><b>GLO</b></td><td>The clock (PLAY: this is now) · birth date and time · birth place and time zone · house system, zodiac (tropical or sidereal Lahiri), display zone.</td></tr>
+    <tr><td><b>SELECT</b></td><td>The operator (body); on the horoscope, the transit; on the clock and birth pages, the minute.</td></tr>
+    <tr><td><b>ALGORITHM</b></td><td>37 algorithms: FREE, then BIRTH, SKY and TRANSIT charts, each in harmonics 1–12.</td></tr>
+    <tr><td><b>PRESETS</b> · <b>SAVE</b></td><td>64 slots. An unsaved slot is cast from your chart, each in its own character. SAVE twice saves.</td></tr>
+    <tr><td><b>PLAY</b> · <b>REC</b></td><td>Run or hold the sky · back to now. On the birth pages REC casts a patch from your chart.</td></tr>
+    <tr><td><b>SEL</b> · <b>ARP</b> · <b>OCT</b></td><td>Mute the operator · latch the keys · octave.</td></tr>
+    <tr><td>Keys, MIDI</td><td>27 keys play three voices of ten operators; USB and TRS MIDI: notes, velocity, bend, mod wheel (vibrato and tremolo), sustain, program change.</td></tr>
+  </table>
+  </div>
+</section>
+
+<section id="sky">
+  <p class="label"><b>05</b> / THE SKY</p>
+  <h2>Computed on the FM-1, offline.</h2>
+  <p>No network, no ephemeris download: the FM-1's own processor computes the Sun, the Moon, Mercury to Pluto and the Moon's node
+    in integer arithmetic, for any instant from 1800 to 2200, and the houses in seven systems (Placidus, Koch, Regiomontanus, Campanus,
+    Porphyry, Equal, Whole Sign), tropical or sidereal. The emulator test checks that the firmware's longitudes equal, to the bit, the
+    host build's, and the host build is measured against Astronomy Engine:</p>
+  <div class="card">
+  <table>
+    <tr><th>Body</th><th>Method</th><th>Largest error, 120 dates 1800–2200</th></tr>
+    <tr><td>Sun, Mercury … Neptune</td><td>Truncated VSOP87B, light time, aberration, precession, nutation</td><td>under 2″</td></tr>
+    <tr><td>Pluto</td><td>Chebyshev fit of its barycentric orbit</td><td>under 5″</td></tr>
+    <tr><td>Moon</td><td>Meeus ch. 47, the 34 largest terms</td><td>38″</td></tr>
+    <tr><td>Houses</td><td>Closed forms and iteration, checked against their geometric definitions</td><td>under 5″</td></tr>
+  </table>
+  </div>
+  <p class="note">Astronomy here is computation. The horoscope readings are symbolic keyword rules (each line names the aspect and houses it
+    comes from), not predictions. The FM-1 has no battery clock: a time restored after power-off is marked unconfirmed until you confirm it.</p>
+</section>
+
+<section id="install">
+  <p class="label"><b>VERSION {{VERSION}}</b> / INSTALL WITH CARE</p>
+  <h2>Put the sky in your FM-1.</h2>
+  <div class="card">
+    <p>{{BUILD}}</p>
+    <div class="btns">
+      <a class="btn" href="install.html">Install in your browser ↗</a>
+      <a class="btn alt" href="firmware/{{PACKAGE}}" download>Download {{PACKAGE}} ↓</a>
+      <a class="btn alt" href="https://github.com/MichaelAPerry/ASTRA-FM-1">Source ↗</a>
+    </div>
+    <p class="note">SHA-256 <code>{{SHA256}}</code></p>
+    <p class="note warnbox"><b>ASTRA FM-1 is an early development build.</b> It is tested in the emulator, not yet on a physical FM-1.
+      Install it only if you are ready to use the USB rescue: hold OCT− while switching on. The installer needs Chrome or Edge (Web MIDI)
+      and a USB data cable. It can also take you back to the official V15.</p>
+  </div>
+</section>
+
+<section id="thanks">
+  <p class="label">WITH GRATITUDE</p>
+  <h2>Built on generous work.</h2>
+  <p>ASTRA runs on <a href="https://github.com/zvenson/dinghy">Dinghy</a> by zvenson (GPL-3.0-only), whose base comes from
+    <a href="https://github.com/hugelton/Felucca">Felucca</a> by Leo Kuroshita (<a href="https://hugelton.com">Hügelton Instruments</a>)
+    and <a href="https://github.com/isod89/sloop-fm1">SLOOP</a> (isod89). The installer is Felucca's web installer. The emulator is
+    <a href="https://github.com/joakimeriksson/fm1-emu">fm1-emu</a> by Joakim Eriksson (MIT). The planetary series are VSOP87 (Bretagnon and Francou)
+    as truncated by <a href="https://github.com/cosinekitty/astronomy">Astronomy Engine</a> (Don Cross, MIT), which also supplies the test references;
+    the Moon and the calendar follow Jean Meeus's <i>Astronomical Algorithms</i>.</p>
+</section>
+<footer>
+  ASTRA FM-1 (working title) · a free, unofficial firmware for the M-VAVE FM-1, not associated with or endorsed by M-VAVE.
+  Code: GPL-3.0-only, <a href="https://github.com/MichaelAPerry/ASTRA-FM-1">source</a>. No warranty.
+</footer>
+</main></body></html>

@@ -1,0 +1,155 @@
+<!doctype html>
+<!-- SPDX-License-Identifier: GPL-3.0-only
+     ASTRA FM-1 installer page. The install flow, its messages and the return to official V15 follow Felucca's
+     web/index_pkg.html by Leo Kuroshita (@kurogedelic), Hügelton Instruments (GPL-3.0-only), by way of MIKU-FM1's
+     site/install.html (same owner); the protocol is in js/. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Install ASTRA FM-1</title>
+<link rel="icon" href="media/favicon.png">
+<link rel="stylesheet" href="site.css">
+</head>
+<body class="inst">
+<main>
+  <p class="crumb"><a href="./">← ASTRA FM-1</a> <span><a href="./#controls">Controls</a></span></p>
+  <p class="label">INSTALL · M-VAVE FM-1 · {{VERSION}}</p>
+  <h1 data-t="title"></h1>
+  <section class="card">
+    <p data-t="intro"></p>
+    <p data-t="warn"></p>
+    <p class="note" data-t="direct"></p>
+    <p class="note warnbox" data-t="beta"></p>
+    <p class="note" data-t="data"></p>
+    <p><button id="go" class="btn" disabled data-t="install"></button></p>
+    <progress id="bar" max="100" value="0"></progress>
+    <p id="status" role="status"></p>
+    <p class="note">{{BUILD}} <span data-t="sha"></span> <code>{{SHA256}}</code></p>
+  </section>
+  <section class="card">
+    <h2 data-t="stockTitle"></h2>
+    <p class="note" data-t="back"></p>
+    <p class="note"><a href="https://www.m-vave.com/download" target="_blank" rel="noopener">M-VAVE downloads</a></p>
+    <p><label><span data-t="stockFile"></span><br><input id="stock-file" type="file" accept=".fwsc"></label></p>
+    <p><button id="stock-go" class="btn alt" disabled data-t="stockGo"></button></p>
+  </section>
+  <section class="card">
+    <h2 data-t="rescueTitle"></h2>
+    <p class="note" data-t="rescue"></p>
+    <p class="note"><a href="https://github.com/MichaelAPerry/ASTRA-FM-1/issues" data-t="report"></a></p>
+    <details><summary data-t="logTitle"></summary><pre id="log"></pre>
+      <button id="copy" class="btn alt" data-t="copy"></button></details>
+  </section>
+  <footer>
+    Installer: Felucca's web installer (fm1ota.js, fm1pkg.js) by Leo Kuroshita (@kurogedelic),
+    <a href="https://hugelton.com">Hügelton Instruments</a>, GPL-3.0-only. ASTRA FM-1 is built on
+    <a href="https://github.com/zvenson/dinghy">Dinghy</a> (GPL-3.0-only). <span data-t="license"></span>
+    <a href="https://github.com/MichaelAPerry/ASTRA-FM-1">github.com/MichaelAPerry/ASTRA-FM-1</a>.
+    M-VAVE and FM-1 are trademarks of their owners; ASTRA FM-1 is an unofficial, free project, not associated with or endorsed by M-VAVE.
+  </footer>
+</main>
+<script type="module">
+import { Updater } from "./js/fm1ota.js";
+import { productOf, logicalImage, validateStockPackage, STOCK_V15_SIZE } from "./js/fm1pkg.js";
+const $ = (id) => document.getElementById(id);
+const TEXT = {
+  en: {
+    title: "The sky in your FM-1, over one USB cable.",
+    intro: "Connect the FM-1 by USB, then press Install. It works in Chrome or Edge; the browser asks once to allow MIDI: allow it.",
+    warn: "Do not unplug the USB cable while writing. Connect only the FM-1 you mean to update.",
+    direct: "Connect the USB cable directly to the computer (a data cable, no hub). Close other apps that use MIDI.",
+    beta: "ASTRA FM-1 is an early development build: it is tested in the fm1-emu emulator, not yet on a physical FM-1. Install it only if you are ready to use the USB rescue below. You install it at your own risk; it comes with no warranty.",
+    data: "ASTRA does not read other firmwares' projects or samples, and saving in ASTRA replaces the settings and preset area other Felucca-family firmwares keep. Back up first.",
+    install: "Install ASTRA FM-1", sha: "SHA-256", stockTitle: "Return to official V15",
+    back: "Get the official FM-1 V15 from M-VAVE and select the unmodified FM-1.fwsc. The browser checks it here; nothing is uploaded. Your ASTRA presets and birth data are not carried over.",
+    stockFile: "Official FM-1.fwsc", stockGo: "Return to official V15", stockValid: "Official V15 verified.",
+    stockConfirm: "Return to the official V15? ASTRA and its presets will be replaced.", stockError: "Cannot use this file: ",
+    rescueTitle: "If it does not start",
+    rescue: "Hold OCT− while switching on: the USB rescue (no sound, only the updater). Press Install here again, or return to V15. After two crashes at boot the FM-1 goes there by itself. If an install was cut off, press Install again: the update resumes.",
+    report: "Report a problem", logTitle: "Installer log", copy: "Copy log",
+    nomidi: "This browser cannot do it. Open the page in Chrome or Edge.", loadfail: "Could not load the firmware: ",
+    start: "Starting", verify: "Checking", loader: "Switching to update mode", write: "Writing",
+    reboot: "Restarting", done: "Done. ASTRA FM-1 is installed.", stopped: "Stopped. Replug the USB cable and press Install again.",
+    error: "Error: ",
+    denied: "MIDI (SysEx) access was not allowed. Allow MIDI in the site settings (address bar) and press Install again.",
+    notfound: "FM-1 not found. Check the USB cable (a data cable), close other apps that use MIDI, and press Install again.",
+    model: "The connected device is not an FM-1.",
+    lost: "The USB connection was lost. Replug it and press Install again.",
+    noloader: "The FM-1 in update mode was not found. Replug the USB cable and press Install again (it stays in update mode until it is finished).",
+    noreturn: "The FM-1 did not come back. Power-cycle it.",
+    mismatch: "Written, but the FM-1 reports another version: ",
+    badpkg: "The file to install is damaged. Reload the page.",
+    leave: "Writing. Do not close the page.", ready: "Ready: ASTRA FM-1 ",
+    license: "GPL-3.0, no warranty. Source:",
+  },
+};
+const lang = "en";
+const t = (k) => TEXT[lang][k];
+let lastKey = null, lastArg = "";
+function applyLang() {
+  document.documentElement.lang = lang;
+  document.querySelectorAll("[data-t]").forEach((e) => { e.textContent = t(e.dataset.t); });
+  if (lastKey) $("status").textContent = t(lastKey) + lastArg;
+}
+applyLang();
+const sayK = (k, arg = "") => { lastKey = k; lastArg = arg; $("status").textContent = t(k) + arg; };
+const log = (s) => { $("log").textContent += s + "\n"; };
+$("copy").addEventListener("click", () => navigator.clipboard && navigator.clipboard.writeText($("log").textContent));
+const meta = /*META*/;
+let image = null, stock = null, writing = false;
+const lock = (on) => { writing = on; $("go").disabled = on || !image; $("stock-go").disabled = on || !stock; $("stock-file").disabled = on; };
+window.addEventListener("beforeunload", (e) => { if (writing) { e.preventDefault(); e.returnValue = t("leave"); } });
+(async () => {
+  if (!navigator.requestMIDIAccess) { sayK("nomidi"); return; }
+  try {
+    const r = await fetch(meta.pkg);
+    if (!r.ok) throw new Error(`${meta.pkg}: HTTP ${r.status}`);
+    const pkg = new Uint8Array(await r.arrayBuffer());
+    if (productOf(pkg) !== meta.product) { sayK("badpkg"); return; }
+    image = logicalImage(pkg);
+    sayK("ready", `${meta.version} (${meta.product})`);
+    $("go").disabled = false;
+  } catch (e) { sayK("loadfail", e.message); }
+})();
+function steps(total) {
+  return (k, a) => {
+    log(`${k} ${a ?? ""}`);
+    if (["start", "loader", "reboot"].includes(k)) sayK(k);
+    if (k === "verify") { sayK("verify"); if (total) $("bar").value = Math.min(30, a / 3); }
+    if (k === "write") { sayK("write"); if (total) $("bar").value = Math.min(99, 30 + 69 * a / total); }
+    if (k === "done") { $("bar").value = 100; sayK("done"); }
+  };
+}
+async function run(img, product) {
+  let midi;
+  try { midi = await navigator.requestMIDIAccess({ sysex: true }); } catch (e) { sayK("denied"); return; }
+  try {
+    const up = new Updater(midi, log);
+    const step = steps(Math.ceil(img.length / 512));
+    const ota = await up.find((id) => /^ota-/i.test(id.model));
+    if (ota) { ota.link.close(); sayK((await up.resume(img, step, product)) ? "done" : "stopped"); }
+    else await up.install(img, product, step);
+  } catch (e) {
+    if (e && e.code && TEXT[lang][e.code]) sayK(e.code, e.detail || "");
+    else sayK("error", e && e.message);
+    log(String(e && e.stack || e));
+  }
+}
+$("go").addEventListener("click", async () => { if (writing || !image) return; lock(true); await run(image, meta.product); lock(false); });
+$("stock-file").addEventListener("change", async () => {
+  const f = $("stock-file").files[0]; stock = null; lock(false);
+  if (!f) return;
+  try {
+    if (f.size !== STOCK_V15_SIZE) throw new Error("FM-1 V15 / FM-1.fwsc");
+    stock = await validateStockPackage(new Uint8Array(await f.arrayBuffer()));
+    sayK("stockValid"); lock(false);
+  } catch (e) { sayK("stockError", e.message); }
+});
+$("stock-go").addEventListener("click", async () => {
+  if (!stock || writing || !confirm(t("stockConfirm"))) return;
+  lock(true); await run(stock.image, stock.product); lock(false);
+});
+</script>
+</body>
+</html>

@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-only
 # Device build and fm1-emu gate (after MIKU-FM1's pages.yml "main" path): build the real .fwsc on Dinghy with JieLi's
-# toolchain, boot it in fm1-emu, and check screen, controls, UI state, sound and the astronomy (tools/emu_smoke.sh).
+# toolchain, boot it in fm1-emu, and check screen, controls, UI state, sound and the astronomy (tools/emu_smoke.sh);
+# then measure the audio interrupt with the FM-1's own instruction costs (fm1-live FM1_STRICT, tools/emu_cpu.sh).
 # The package and the evidence (WAV, screen BMPs, log) are uploaded as artifacts. Not attested: a dev build.
 name: device
 on:
@@ -52,9 +53,12 @@ jobs:
           mkdir -p build/fm1-emu-src && cd build/fm1-emu-src   # (target/ may come from the cache: no plain clone)
           git init -q && git fetch -q --depth 1 https://github.com/joakimeriksson/fm1-emu "$FM1_EMU_COMMIT"
           git -c advice.detachedHead=false checkout -q FETCH_HEAD
-          cargo build -q --release -p fm1-emu
+          sudo apt-get install -y -q libasound2-dev libx11-dev libxkbcommon-dev libxcursor-dev libxrandr-dev libxi-dev libwayland-dev > /dev/null
+          cargo build -q --release -p fm1-emu -p fm1-live
       - name: Boot it in fm1-emu (screen, controls, state, sound, astronomy)
         run: tools/emu_smoke.sh build/native/astra.fwsc build/native/astra-probe.txt build/emu build/emu_expect build/fm1-emu-src/target/release/fm1-emu
+      - name: Audio interrupt on the FM-1's measured costs (every voice, every effect)
+        run: tools/emu_cpu.sh build/native/astra.fwsc build/native/astra-probe.txt build/cpu build/fm1-emu-src/target/release/fm1-live
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -65,4 +69,5 @@ jobs:
             build/emu/boot.log
             build/emu/audio.wav
             build/emu/work/lcd_*.bmp
+            build/cpu/cpu.log
           if-no-files-found: warn

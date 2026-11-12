@@ -14,4 +14,8 @@ jobs:
       - name: Test
         run: ctest --test-dir build --output-on-failure
       - name: Generated tables unchanged
-        run: git diff --exit-code core/astro/astro_tables.h
+        run: |
+          python3 -m pip install -q astronomy-engine==2.1.19
+          python3 tools/gen_planet_tables.py
+          python3 tools/gen_fm_tables.py
+          git diff --exit-code core/astro/astro_tables.h core/astro/planet_tables.h core/fm/fm_tables.h

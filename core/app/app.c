@@ -28,6 +28,11 @@ static const app_par_t PARS[][4] = {
     {X("LATITUDE", XP_LAT), X("LONGITUDE", XP_LON), X("ZONE", XP_B_TZ), X("TIME", XP_KNOWN)},
     {X("HOUSES", XP_HSYS), X("ZODIAC", XP_ZODIAC), X("ZONE", XP_TZ), X("-", XP_NONE)},
 };
+#undef G
+#undef GS
+#undef O
+#undef OS
+#undef X
 static const uint8_t ROW0[APP_NPAGE] = {0, 1, 5, 6, 8, 10, 11}, NSUB[APP_NPAGE] = {1, 4, 1, 2, 2, 4, 4};
 const app_par_t *app_pars(void) { return PARS[ROW0[A.page] + (A.page == APP_PG_HORO ? 0u : A.sub)]; }
 
@@ -182,7 +187,7 @@ static void bank_get(unsigned bank) {
     for (i = 0; i < 8u; i++) if (A.bank.valid >> i & 1u) patch_sanitize(&A.bank.p[i]);
     A.bank_no = (uint8_t)bank;
 }
-static void slot_load(unsigned slot) {
+static void preset_load(unsigned slot) {
     A.set.slot = (uint8_t)(slot % APP_NSLOT);
     bank_get(A.set.slot / 8u);
     if (A.bank.valid >> (A.set.slot & 7u) & 1u) A.patch = A.bank.p[A.set.slot & 7u];
@@ -190,14 +195,14 @@ static void slot_load(unsigned slot) {
     A.edited = 0; A.dirty |= DIRTY_DERIVE; A.save_arm = 0;
     if (A.patch.warp) A.live = 0;
 }
-static void slot_save(void) {
+static void preset_save(void) {
     bank_get(A.set.slot / 8u);
     A.bank.p[A.set.slot & 7u] = A.patch; A.bank.valid |= 1u << (A.set.slot & 7u);
     if (A.st && A.st->save) A.st->save(1u + A.bank_no, &A.bank, sizeof A.bank);
     A.saves++; A.edited = 0; A.save_pending = 0;
     say_n("SAVED TO ", A.set.slot + 1u, "");
 }
-static void settings_save(void) {
+static void set_save(void) {
     A.set.magic = APP_SET_MAGIC; A.set.days = A.now_days; A.set.sec = A.now_sec; A.set.clock_saved = A.clock != APP_T_NOT_SET;
     if (A.st && A.st->save) A.st->save(0, &A.set, sizeof A.set);
     A.dirty &= (uint8_t)~DIRTY_SET; A.save_ms = A.ms; A.saves++;
@@ -230,7 +235,7 @@ void app_midi(unsigned st, unsigned d1, unsigned d2) {
         else if (d1 == 64u) fm_sustain(d2 >= 64u);
         else if (d1 == 120u || d1 == 123u) fm_all_off();
         break;
-    case 0xC0: slot_load(d1 % APP_NSLOT); break;
+    case 0xC0: preset_load(d1 % APP_NSLOT); break;
     default: break;
     }
 }
@@ -244,7 +249,7 @@ void app_encoder(unsigned e, int d) {
     else if (e == APP_ENC_ALGORITHM) {
         A.patch.algo = (uint8_t)(((int)A.patch.algo + d % (int)PATCH_NALGO + (int)PATCH_NALGO) % (int)PATCH_NALGO);
         A.dirty |= DIRTY_DERIVE; A.edited = 1;
-    } else if (e == APP_ENC_PRESETS) slot_load((unsigned)(((int)A.set.slot + d % (int)APP_NSLOT + (int)APP_NSLOT) % (int)APP_NSLOT)), A.dirty |= DIRTY_SET, A.set_ms = A.ms;
+    } else if (e == APP_ENC_PRESETS) preset_load((unsigned)(((int)A.set.slot + d % (int)APP_NSLOT + (int)APP_NSLOT) % (int)APP_NSLOT)), A.dirty |= DIRTY_SET, A.set_ms = A.ms;
     else if (A.page == APP_PG_GLOBAL && A.sub == 0u) {
         moved = civil_move(&A.now_days, &A.now_sec, A.set.tz_q, 0, 0, 0, 0, d);
         if (moved && A.clock == APP_T_SET) { A.dirty |= DIRTY_SET; A.set_ms = A.ms; }
@@ -330,7 +335,7 @@ void app_init(const app_store_t *st, uint32_t ms) {
     A.has_natal = (uint8_t)chart_natal(&A.natal, &A.set.birth, A.set.hsys, A.set.sidereal);
     chart_cast(&A.sky, A.sky_days, A.sky_sec, 0, 0, 0, A.set.hsys, A.set.sidereal);
     A.calc_days = A.sky_days; A.calc_sec = A.sky_sec; A.calc_ms = ms;
-    slot_load(A.set.slot);
+    preset_load(A.set.slot);
     A.dirty = DIRTY_DERIVE | DIRTY_SKY;
 }
 
@@ -384,9 +389,9 @@ void app_tick(uint32_t ms) {
         }
     }
     /* saves wait for silence (an erase stops the sound for 50 ms), but not for ever */
-    if (A.save_pending && (!fm_voices || ms - A.save_ms > 3000u)) slot_save();
+    if (A.save_pending && (!fm_voices || ms - A.save_ms > 3000u)) preset_save();
     if (A.clock == APP_T_SET && ms - A.save_ms > 3600000u) A.dirty |= DIRTY_SET;       /* the running clock, hourly */
-    if ((A.dirty & DIRTY_SET) && ms - A.set_ms >= 2000u && (!fm_voices || ms - A.set_ms > 8000u)) settings_save();
+    if ((A.dirty & DIRTY_SET) && ms - A.set_ms >= 2000u && (!fm_voices || ms - A.set_ms > 8000u)) set_save();
 }
 
 void app_info(app_info_t *o) {

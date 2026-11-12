@@ -11,7 +11,7 @@ void shot(const char *path) {
 }
 int main(int argc, char **argv) {
     unsigned i;
-    gfx_target(fb); gfx_clear();
+    gfx_target(fb); gfx_clear(0);
     for (i = 0; i < GLYPH_N; i++) gfx_glyph(i, 20 + (int)(i % 7) * 33, 18 + (int)(i / 7) * 34, 26, gfx_hsv(i * 9, 200, 255));
     for (i = 0; i < 12; i++) gfx_glyph(i < 11 ? i : 11, 10 + (int)i * 19, 152, 13, GFX_RGB(255, 255, 255));
     for (i = 0; i < 12; i++) gfx_glyph(GLYPH_SIGN + i, 10 + (int)i * 19, 170, 11, GFX_RGB(255, 255, 255));

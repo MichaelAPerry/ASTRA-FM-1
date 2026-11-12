@@ -6,10 +6,27 @@ seeded-random). Checked by `tests/test_astro.c` on every push. Quantity: geocent
 
 | Body | Method (integer, core/astro) | Max error | Mean error | Test tolerance | Status |
 |---|---|---|---|---|---|
-| Sun | Meeus ch. 25 low precision + aberration + nutation (4 terms) | 0.0075° (27″) | 0.0025° | 0.01° | Host-tested |
-| Moon | Meeus ch. 47, 34 largest of 60 longitude terms + 3 additive + nutation | 0.0105° (38″) | 0.0027° | 0.02° | Host-tested |
-| Planets | — | — | — | — | Designed (HANDOFF) |
-| Ascendant / houses | — | — | — | — | Designed |
+| Sun (`astro_sky`) | VSOP87B Earth (truncated), light time, aberration, precession, nutation | 0.0003° (1.0″) | 0.0001° | 0.003° | Host-tested, Emulator-tested (bit-exact) |
+| Moon | Meeus ch. 47, 34 largest of 60 longitude terms + 3 additive + nutation | 0.0105° (38″) | 0.0027° | 0.02° | Host-tested, Emulator-tested |
+| Mercury | VSOP87B truncated (Astronomy Engine's), geocentric, as the Sun | 0.0002° (0.9″) | 0.0001° | 0.012° | Host-tested, Emulator-tested |
+| Venus | 〃 | 0.0005° (1.6″) | 0.0001° | 0.012° | 〃 |
+| Mars | 〃 | 0.0005° (1.7″) | 0.0001° | 0.012° | 〃 |
+| Jupiter | 〃 | 0.0002° (0.9″) | 0.0001° | 0.012° | 〃 |
+| Saturn | 〃 | 0.0002° (0.9″) | 0.0001° | 0.012° | 〃 |
+| Uranus | 〃 | 0.0003° (1.2″) | 0.0001° | 0.012° | 〃 |
+| Neptune | 〃 | 0.0003° (1.1″) | 0.0002° | 0.012° | 〃 |
+| Pluto | Chebyshev fit (degree 40, 1799–2201) of its barycentric position, minus the Sun's offset | 0.0013° (4.8″) | 0.0004° | 0.012° | 〃 |
+| Daily motion (retrograde) | difference over 3 h | Moon 0.033°/day, Mercury 0.012°/day, others ≤ 0.006°/day; the retrograde sign always right where \|motion\| > 0.01°/day | | 0.02°/day (Moon 0.25) | Host-tested |
+| Mean node | Meeus ch. 22 Ω | (the mean node by definition) | | | Host-tested |
+| ASC / MC | sidereal time (IAU, from the UT seconds), true obliquity, closed forms | 0.0007° (2.4″) | | 0.01° | Host-tested |
+| Placidus, Koch, Regiomontanus, Campanus | iteration (Placidus), closed forms | 0.0005°, 0.0013°, 0.0004°, 0.0009° | | 0.012° | Host-tested, 60 dates and places to ±62° |
+| Porphyry, Equal, Whole Sign | arithmetic on ASC and MC | exact given ASC/MC | | | Host-tested |
+
+The house references are not another library's output: `tools/gen_reference.py` finds each cusp from its
+geometric definition by root finding on unit vectors (only the sidereal time and obliquity come from Astronomy
+Engine). Placidus and Koch do not exist where some degrees never rise or set: there the device falls back to
+Porphyry and says so on the screen. Sidereal zodiac: Lahiri ayanamsa, 23.85709° at J2000 plus IAU 2006 precession
+(checked at J2000 and 1950).
 
 Also checked: Meeus example 25.a (Sun, < 0.002°) and 47.a (Moon geometric and apparent, < 0.01°); the sine table
 (< 3e-6 over 4096 angles); calendar and J2000.0 conversions; sign boundaries at 0°/360°.
@@ -32,3 +49,8 @@ Limits, stated:
   never the ISR.
 - Precision for astrology: zodiac positions are shown to the arcminute (1′ = 0.0167°), so the Sun and Moon are
   within one displayed arcminute nearly always; the Moon can be off by up to ~1′ at its worst.
+
+- **Device == host, bit for bit, for all eleven bodies** (Sun..Pluto and the node) at the instant the emulator gate
+  reaches (`tools/emu_smoke.sh`, CI on every push). Code size of the whole sky (`astro.c` + `sky.c` with the VSOP
+  and Pluto tables): 16 KB (astro.c 4.6 KB, sky.c 11.4 KB, JieLi clang -Os) of the 568 KB image; RAM: none beyond the stack. A whole chart (`chart_cast`: eleven
+  bodies with motions, houses) runs in the main loop, never the audio interrupt.

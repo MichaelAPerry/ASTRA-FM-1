@@ -20,7 +20,8 @@
 
 #define FM_NOP 10u                  /* operators a voice */
 #ifndef FM_NVOICE
-#define FM_NVOICE 5u                /* voices: set from the measured interrupt time (docs/ENGINE.md) */
+#define FM_NVOICE 3u                /* voices: the most that keep the audio interrupt under half its period on the
+                                       FM-1's measured costs (3: 42 %, 4: 54 %, 5: 66 %; docs/ENGINE.md) */
 #endif
 #define FM_SUB 32u                  /* frames per control step: envelopes, smoothing, LFO */
 #define FM_FS 44100u

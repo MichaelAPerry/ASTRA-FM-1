@@ -2,12 +2,15 @@
 # SPDX-License-Identifier: GPL-3.0-only
 # Adapted from MIKU-FM1 tools/emu_smoke.sh (MIT, same owner).
 # Boot an ASTRA package in fm1-emu (github.com/joakimeriksson/fm1-emu) and check, from the real .fwsc:
-#   - it boots, draws (screen not one colour) and sounds (audio RMS above a floor);
-#   - the controls: from the editor's start (2000-01-01 12:00 UTC, NOT SET) the knobs turn it to 2026-11-05, PLAY sets it;
-#   - the UI state: NOT SET before PLAY, SET after, the clock running from 12:00:00 since;
-#   - the astronomy: the Sun and Moon longitudes the firmware computed (astra_probe, read with --dump) equal, to the bit,
-#     what the host build of the same core/astro gives for the same instant (EXPECT = build/emu_expect);
-#   - the TEMPORARY test tone: its measured pitch is the note the Moon's sign gives.
+#   - it boots and draws the wheel (many colours), silent until a key is held;
+#   - the controls: GLO, the knobs turn the clock from the chart time (2000-01-01 12:00, NOT SET) to 2026-11-05,
+#     PLAY sets it; HOME; two keys held; ALGORITHM and KNOB 1 turned; SEQ (the horoscope);
+#   - the state after it (astra_probe, read with --dump): page, clock SET and running, the sky on it, algorithm,
+#     wires and transits found;
+#   - the astronomy: the eleven longitudes the firmware computed equal, to the bit, what the host build of the same
+#     core gives for the same instant (EXPECT = build/emu_expect);
+#   - the sound: silence before the keys, sound while they are held, the lower key's own pitch in it;
+#   - the screen: each step changed it, and the knob turn put a colour on its dial that was not there before.
 # Evidence (WAV, BMPs, log) goes to OUT_DIR.
 #   tools/emu_smoke.sh PACKAGE.fwsc PROBE.txt OUT_DIR EXPECT [FM1_EMU_BIN]
 set -eu
@@ -16,43 +19,69 @@ abs() { case "$1" in */*) echo "$(cd "$(dirname "$1")" && pwd)/$(basename "$1")"
 PKG="$(abs "${1:?$U}")"; PROBE="$(cat "${2:?$U}")"; OUT="${3:?$U}"; EXPECT="$(abs "${4:?$U}")"; EMU="$(abs "${5:-fm1-emu}")"
 mkdir -p "$OUT/work"                            # fm1-emu writes snapshots to work/ (and fails silently without it)
 cd "$OUT"
-# K1 (enc2) +26 years, K2 (enc3) +10 months, K3 (enc4) +4 days: 2026-11-05 12:00 UTC. PLAY at 1500 ms sets it.
-"$EMU" --fwsc "$PKG" --ms 3000 --keys '300:enc2:+26,600:enc3:+10,900:enc4:+4,1500:PLAY' --snap 1300,2800 \
-       --wav audio.wav --dump "$PROBE" 7 > boot.log 2>&1
+"$EMU" --fwsc "$PKG" --ms 3800 \
+       --keys '500:GLO,700:K1:+26,800:K2:+10,900:K3:+4,1300:PLAY,1600:HOME,1800-3200:n7,1900-3200:n14,2500:ALGO:+12,2700:K1:+3,3300:SEQ' \
+       --snap 400,1500,2400,3000,3600 --wav audio.wav --dump "$PROBE" 37 > boot.log 2>&1
 python3 - "$EXPECT" <<'PY'
-import array, re, subprocess, sys, wave
+import array, math, re, subprocess, sys, wave
 from PIL import Image
 log = open("boot.log").read()
-m = re.search(r"^dump 0x[0-9a-f]+ \(7 words\):\n\s+0x[0-9a-f]+:((?: [0-9a-f]{8}){7})", log, re.M)
+m = re.search(r"^dump 0x[0-9a-f]+ \(37 words\):\n((?:\s+0x[0-9a-f]+:(?: [0-9a-f]{8})+\n?)+)", log, re.M)
 assert m, "no probe dump in boot.log"
-magic, days, sec, state, sun, moon, note = (int(w, 16) for w in m[1].split())
-days -= (days >> 31) << 32                       # int32
-assert magic == 0x50525453, f"probe never filled (magic {magic:#x})"
-print(f"emu_smoke: probe days {days} sec {sec} state {state} sun {sun:08x} moon {moon:08x} note {note}")
-assert days == 20762, f"date: day {days}, want 20762 (2026-11-05): the knobs did not reach the firmware"
-assert state == 2, f"state {state}, want 2 (SET): PLAY did not set the clock"
-assert 43200 < sec <= 43200 + 2, f"sec {sec}: want 12:00:00 plus the ~1.5 s since PLAY"
-want = subprocess.run([sys.argv[1], str(days), str(sec)], check=True, capture_output=True, text=True).stdout.split()
-assert [f"{sun:08x}", f"{moon:08x}", str(note)] == want, f"device {sun:08x} {moon:08x} {note}, host {want}"
-print(f"emu_smoke: Sun {sun * 360 / 2**32:.4f} deg, Moon {moon * 360 / 2**32:.4f} deg: device == host, bit for bit")
+w = [int(x, 16) for line in m[1].splitlines() for x in line.split(":")[1].split()]
+names = "magic page sub sel slot algo clock live run edited nedge ntransit latch saves sky_days sky_sec now_days now_sec".split()
+p = dict(zip(names, w)); lon = w[18:29]; voices, isr_max, isr_mean, frames, rows = w[30:35]
+assert p["magic"] == 0x50525432, f"probe never filled (magic {p['magic']:#x})"
+print("emu_smoke: probe", {k: v for k, v in p.items() if k != "magic"})
+assert p["page"] == 5 and p["sub"] == 0, f"page {p['page']}.{p['sub']}, want 5.0 (the horoscope): SEQ did not reach the firmware"
+assert p["clock"] == 2, f"clock state {p['clock']}, want 2 (SET): GLO, the knobs or PLAY did not reach the firmware"
+assert p["now_days"] == 20762, f"date: day {p['now_days']}, want 20762 (2026-11-05)"
+assert 43200 < p["now_sec"] <= 43200 + 4, f"now {p['now_sec']} s: want 12:00:00 plus the ~2.5 s since PLAY"
+assert p["live"] == 1 and p["sky_days"] == p["now_days"] and 0 <= p["now_sec"] - p["sky_sec"] <= 1, "the sky is not on the clock"
+assert p["algo"] == 13 and p["edited"] == 1, f"algorithm {p['algo']}, want 13 (SKY H1): ALGORITHM did not turn"
+assert p["nedge"] > 0 and p["ntransit"] > 0, "no wires or no transits from the sky"
+want = subprocess.run([sys.argv[1], str(p["sky_days"]), str(p["sky_sec"])], check=True, capture_output=True, text=True).stdout.split()
+got = [f"{v:08x}" for v in lon]
+assert got == want, f"device {got}\nhost   {want}"
+print("emu_smoke: Sun..Pluto, Node:", " ".join(f"{v * 360 / 2**32:.3f}" for v in lon), "deg: device == host, bit for bit")
+print(f"emu_smoke: audio interrupt mean {isr_mean} us, max {isr_max} us of 5805 (fm1-emu counts an instruction a cycle: "
+      f"the FM-1's own costs are measured with tools/emu_cpu.sh); {frames} frames drawn, {rows} rows sent")
+assert isr_max < 5805, "the audio interrupt overran its period"
 
-with wave.open("audio.wav", "rb") as w:
-    rate, ch, n = w.getframerate(), w.getnchannels(), w.getnframes()
-    a = array.array("h", w.readframes(n))
-rms = (sum(x * x for x in a) / max(len(a), 1)) ** 0.5
-tail = a[::ch][-rate // 2:]                      # the last 0.5 s, left channel: well after PLAY, the tone settled
-ups = sum(1 for i in range(1, len(tail)) if tail[i - 1] < 0 <= tail[i])
-f, f_want = ups * rate / len(tail), 440 * 2 ** ((note - 69) / 12)
-print(f"emu_smoke: {n} frames at {rate} Hz, RMS {rms:.0f}, tone {f:.1f} Hz (note {note}: {f_want:.1f} Hz)")
-assert n > 10000, "short audio"
-assert rms > 10, "silent"
-assert abs(f / f_want - 1) < 0.03, "the tone is not the Moon's note"
+with wave.open("audio.wav", "rb") as wv:
+    rate, ch, n = wv.getframerate(), wv.getnchannels(), wv.getnframes()
+    a = array.array("h", wv.readframes(n))
+left = a[::ch]
+rms = lambda x: (sum(v * v for v in x) / max(len(x), 1)) ** 0.5
+def tone(x, f):                                  # amplitude of f in x (Hann window)
+    N = len(x); c = 2 * math.cos(2 * math.pi * f / rate); s1 = s2 = 0.0
+    for i, v in enumerate(x):
+        s0 = v * (0.5 - 0.5 * math.cos(2 * math.pi * i / N)) + c * s1 - s2; s2, s1 = s1, s0
+    return math.sqrt(max(s1 * s1 + s2 * s2 - c * s1 * s2, 0)) * 4 / N
+# the WAV starts when the firmware starts its audio, a little after boot: time it from the first sound, the keys
+onset = next((i for i, v in enumerate(left) if abs(v) > 64), len(left))
+quiet, held = left[:onset], left[onset + rate // 10:onset + rate // 2]
+c4, off = tone(held, 261.63), tone(held, 233.0)
+print(f"emu_smoke: {n} frames at {rate} Hz; silent for {onset / rate:.2f} s (no key held), then held RMS {rms(held):.0f}, "
+      f"peak {max(abs(v) for v in a)}; C4 {c4:.0f}, between the notes {off:.0f}")
+assert n > 100000, "short audio"
+assert onset > rate, "sound before any key was held (or the keys came too early)"
+assert rms(quiet) < 3, "noise with no key held"
+assert rms(held) > 150, "silent while two keys are held"
+assert c4 > 8 * off and c4 > 40, "the held key's pitch is not in the sound"
 
-a, b = (Image.open(f"work/lcd_{t}.bmp").convert("RGB") for t in (1300, 2800))
-colours = len(b.getcolors(1 << 16))
-state_line = (0, 68, 240, 84)                     # astra.c draw_state(): NOT SET (amber) -> SET (green)
-changed = a.crop(state_line).tobytes() != b.crop(state_line).tobytes()
-print(f"emu_smoke: {colours} screen colours; state line changed after PLAY: {changed}")
-assert colours > 2, "blank screen"
-assert changed, "the screen did not show the new state"
+im = {t: Image.open(f"work/lcd_{t}.bmp").convert("RGB") for t in (400, 1500, 2400, 3000, 3600)}
+def cols(i, box=None):                           # the distinct colours in an image (or a box of it)
+    b = (i.crop(box) if box else i).tobytes()
+    return {b[k:k + 3] for k in range(0, len(b), 3)}
+print(f"emu_smoke: screen colours at boot {len(cols(im[400]))}, playing {len(cols(im[2400]))}, horoscope {len(cols(im[3600]))}")
+assert len(cols(im[400])) > 12, "the wheel is not drawn"
+body = (0, 12, 240, 200)
+assert im[400].crop(body).tobytes() != im[1500].crop(body).tobytes(), "GLO changed nothing on the screen"
+assert im[1500].crop(body).tobytes() != im[2400].crop(body).tobytes(), "HOME changed nothing on the screen"
+assert im[3000].crop(body).tobytes() != im[3600].crop(body).tobytes(), "SEQ changed nothing on the screen"
+dial = (0, 196, 60, 240)                         # KNOB 1's dial
+new = cols(im[3000], dial) - cols(im[2400], dial)
+print(f"emu_smoke: KNOB 1 turned: {len(new)} new colours on its dial")
+assert new, "the knob turn did not change a colour on its dial"
 PY
