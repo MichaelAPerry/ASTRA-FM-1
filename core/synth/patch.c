@@ -143,7 +143,7 @@ void patch_derive(const patch_t *p, const chart_t *natal, const chart_t *sky, fm
     if (route) { route->nasp = (uint8_t)n; route->nedge = 0; }
     for (i = 0; i < FM_NOP; i++) {              /* where the sound's weight is on the wheel, left to right */
         int32_t g = p->op[i].mute ? 0 : (int32_t)fm_level(p->op[i].out) >> 4;
-        centre += -(astro_cos_q30(pos->lon[i] - pos->h.asc) >> 16) * g; wsum += g;
+        centre += -(astro_cos_q30(pos->lon[i] - ref->h.asc) >> 16) * g; wsum += g;
     }
     centre = wsum ? centre / wsum : 0;
     for (i = 0; i < FM_NOP; i++) {
@@ -179,7 +179,7 @@ void patch_derive(const patch_t *p, const chart_t *natal, const chart_t *sky, fm
         out->level[i] = (uint16_t)lvl;
         /* the wheel is the stereo field: the ascendant to the left, the descendant to the right, and the whole
          * picture shifted so that its loudness sits in the middle (a chart with everything rising is not a mix) */
-        pn = 16384 - (astro_cos_q30(pos->lon[i] - pos->h.asc) >> 16) - centre;                 /* 0 left .. 32768 right */
+        pn = 16384 - (astro_cos_q30(pos->lon[i] - ref->h.asc) >> 16) - centre;                 /* 0 left .. 32768 right */
         pn = 16384 + (((pn - 16384) * (int32_t)p->width) >> 7);
         pn = pn < 0 ? 0 : pn > 32768 ? 32768 : pn;
         ang = (uint32_t)pn << 15;                                                                /* 0 .. a quarter turn */
