@@ -31,7 +31,7 @@ jobs:
           curl -fL --retry 3 --connect-timeout 30 --max-time 600 https://pkgman.jieliapp.com/s/linux-toolchain | tar -xJ
           echo "JIELI_TOOLCHAIN=$(find "$RUNNER_TEMP/tc" -maxdepth 1 -mindepth 1 -type d | head -n 1)" >> "$GITHUB_ENV"
           sdk="$RUNNER_TEMP/ac79sdk"
-          tools/get_sdk.sh "$sdk"            # three files, pinned and SHA-256 checked; a time-limited clone only as fallback
+          "$GITHUB_WORKSPACE/tools/get_sdk.sh" "$sdk"   # three files, pinned and SHA-256 checked; a time-limited clone only as fallback
           echo "AC79_SDK=$sdk" >> "$GITHUB_ENV"
       - name: Firmware (.fwsc)
         run: |
