@@ -115,6 +115,12 @@ int main(int argc, char **argv) {
     for (i = 0; i < n && i < 4; i++) { printf("reading:"); for (k = 0; k < 4; k++) { chart_read_transit(&sky, &natal, &asp[i], k, s, sizeof s); CHECK(strlen(s) < sizeof s && (k == 3 || s[0]), "line"); printf(" [%s]", s); } printf("\n"); }
     for (k = 0; k < 4; k++) { chart_read_place(&natal, ASTRO_MOON, k, s, sizeof s); printf("%s[%s]", k ? " " : "reading: ", s); } printf("\n");
     chart_read_place(&natal, ASTRO_SUN, 0, s, sizeof s); CHECK(!strcmp(s, "SUN IN PISCES"), "%s", s);
+    /* 777's trumps: every line of every placement fits the screen; Saturn is XXI, Pisces XVIII; no trump for Pluto */
+    for (i = 0; i < ASTRO_NBODY; i++) for (k = 0; k < 7; k++) { chart_read_place(&natal, i, k, s, sizeof s); CHECK(strlen(s) <= 38, "place %u line %u: %zu chars", i, k, strlen(s)); }
+    chart_read_place(&natal, ASTRO_SUN, 4, s, sizeof s); CHECK(!strcmp(s, "777: XIX IN XVIII"), "%s", s);
+    chart_read_place(&natal, ASTRO_SATURN, 5, s, sizeof s); CHECK(!strcmp(s, "THE GREAT ONE OF THE NIGHT OF TIME"), "%s", s);
+    chart_read_place(&natal, ASTRO_PLUTO, 5, s, sizeof s); CHECK(!s[0], "Pluto has no trump in 777: %s", s);
+    for (k = 4; k < 7; k++) { chart_read_place(&natal, ASTRO_MOON, k, s, sizeof s); printf("%s[%s]", k == 4 ? "777: " : " ", s); } printf("\n");
     chart_read_place(&natal, ASTRO_SUN, 0, s, 8); CHECK(strlen(s) == 7, "truncation: %s", s);
     CHECK(chart_dignity(ASTRO_SUN, 4) == 2 && chart_dignity(ASTRO_SUN, 10) == -2 && chart_dignity(ASTRO_SUN, 0) == 1 && chart_dignity(ASTRO_SUN, 6) == -1 && chart_dignity(ASTRO_MARS, 7) == 2, "dignities");
     CHECK(chart_moon_phase(&natal) < 256, "phase");

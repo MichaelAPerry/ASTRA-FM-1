@@ -40,14 +40,17 @@
   <p>This is the installable package running in <a href="https://github.com/joakimeriksson/fm1-emu">fm1-emu</a>, an emulator of the
     FM-1's chip. Click it, hold a few keys, then turn the ALGORITHM encoder: the wires on the wheel change, and so does the sound.
     <b>GLO</b> sets the clock and your birth data; <b>SEQ</b> reads the transits.</p>
-  <iframe class="emu" src="fm1-emu/" title="ASTRA FM-1 in the fm1-emu emulator" loading="lazy" allow="autoplay"></iframe>
-  <p class="note"><a href="fm1-emu/">Open the emulator on its own page ↗</a> · The browser emulator is not a measure of the FM-1's CPU.</p>
+  <iframe class="emu" src="fm1-emu/?mhz=240" title="ASTRA FM-1 in the fm1-emu emulator" loading="lazy" allow="autoplay"></iframe>
+  <p class="note"><a href="fm1-emu/?mhz=240">Open the emulator on its own page ↗</a> · It runs at the FM-1's own 240 MHz: ASTRA uses about half
+    of the chip for its sound, so it needs a fast computer to play in real time (the page says when yours cannot keep up). At a lower clock
+    the emulated chip itself is too slow for four voices and the sound breaks up: that is the emulator's clock, not the FM-1.
+    The browser emulator is not a measure of the FM-1's CPU.</p>
 </section>
 
 <section id="engine">
   <p class="label"><b>02</b> / THE ENGINE</p>
   <h2>A chart is a patch.</h2>
-  <p class="note">Three voices of ten operators each (thirty operators every sample), rendered by the FM-1 itself in integer arithmetic, 44.1 kHz. Each operator is a body:
+  <p class="note">Four voices of ten operators each (forty operators every sample), rendered by the FM-1 itself in integer arithmetic, 44.1 kHz. Each operator is a body:
     Sun, Moon, Mercury, Venus, Mars, Jupiter, Saturn, Uranus, Neptune, Pluto.</p>
   <div class="grid">
     <div class="card feat"><span class="num">WIRES</span><h3>Aspects route the operators.</h3><p>Conjunctions modulate deeply, trines flow, sextiles touch lightly,
@@ -61,7 +64,7 @@
     <div class="card feat"><span class="num">ANY LOOP</span><h3>No topology is special.</h3><p>Every operator hears two phase sources, one ring source and its own feedback,
       from any operator. Every loop is one sample long, so any wiring the sky makes is stable, and the cost never changes.</p></div>
     <div class="card feat"><span class="num">EFFECTS</span><h3>Chorus, echo, room.</h3><p>A swept stereo chorus, a cross-fed tape echo that glides when you change it,
-      a four-line reverb, and a soft knee into full scale. The audio interrupt stays under half of its 5.8 ms, measured on the FM-1's own instruction costs.</p></div>
+      a four-line reverb, and a soft knee into full scale. The audio interrupt takes 54 % of its 5.8 ms on the FM-1's measured instruction costs, and the clock page shows the real figure on your FM-1.</p></div>
   </div>
 </section>
 
@@ -77,7 +80,7 @@
     <figure class="shot"><img src="media/screens/effects.png" alt="EFFECTS page" loading="lazy"><figcaption><b>EFFECTS</b> · FX · chorus lines, echoes, the room</figcaption></figure>
     <figure class="shot"><img src="media/screens/transits.png" alt="HOROSCOPE page" loading="lazy"><figcaption><b>HOROSCOPE</b> · SEQ · transits, closest first, and their reading</figcaption></figure>
     <figure class="shot"><img src="media/screens/month.png" alt="THE MONTH page" loading="lazy"><figcaption><b>THE MONTH</b> · SEQ · thirty days either side, aspect by aspect</figcaption></figure>
-    <figure class="shot"><img src="media/screens/clock.png" alt="CLOCK page" loading="lazy"><figcaption><b>NOW</b> · GLO · the clock: never called now until you set it</figcaption></figure>
+    <figure class="shot"><img src="media/screens/clock.png" alt="CLOCK page" loading="lazy"><figcaption><b>NOW</b> · GLO · the clock, never called now until you set it, and the audio interrupt's load as the firmware measures it (here, in the emulator)</figcaption></figure>
   </div>
 </section>
 
@@ -97,7 +100,8 @@
     <tr><td><b>PRESETS</b> · <b>SAVE</b></td><td>64 slots. An unsaved slot is cast from your chart, each in its own character. SAVE twice saves.</td></tr>
     <tr><td><b>PLAY</b> · <b>REC</b></td><td>Run or hold the sky · back to now. On the birth pages REC casts a patch from your chart.</td></tr>
     <tr><td><b>SEL</b> · <b>ARP</b> · <b>OCT</b></td><td>Mute the operator · latch the keys · octave.</td></tr>
-    <tr><td>Keys, MIDI</td><td>27 keys play three voices of ten operators; USB and TRS MIDI: notes, velocity, bend, mod wheel (vibrato and tremolo), sustain, program change.</td></tr>
+    <tr><td>Readings</td><td>Every line names its source: the aspect, the houses, the time to exact. Placements add the Tarot trumps of Crowley's <i>777</i> (1909) for the body and its sign, their titles quoted.</td></tr>
+    <tr><td>Keys, MIDI</td><td>27 keys play four voices of ten operators; USB and TRS MIDI: notes, velocity, bend, mod wheel (vibrato and tremolo), sustain, program change.</td></tr>
   </table>
   </div>
 </section>

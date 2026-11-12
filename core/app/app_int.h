@@ -38,7 +38,7 @@ typedef struct {
     uint32_t bump_ms[APP_NENC];
     uint32_t tl_lon[APP_TL_N][ASTRO_NPLANET];
     chart_asp_t tr[12];
-    uint16_t master;
+    uint16_t master, load_peak, load_mean;
     int8_t octave;
     uint8_t has_natal, clock, live, run, page, sub, sel, latch, save_arm, save_pending, edited, dirty, bank_no;
     uint8_t ntr, tr_sel, tl_fill, tl_ok;

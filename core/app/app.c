@@ -240,6 +240,7 @@ void app_midi(unsigned st, unsigned d1, unsigned d2) {
     }
 }
 void app_master(unsigned v) { A.master = (uint16_t)(v > 1023u ? 1023u : v); }
+void app_load(unsigned peak, unsigned mean) { A.load_peak = (uint16_t)(peak > 999u ? 999u : peak); A.load_mean = (uint16_t)(mean > 999u ? 999u : mean); }
 
 /* ---- the panel */
 void app_encoder(unsigned e, int d) {

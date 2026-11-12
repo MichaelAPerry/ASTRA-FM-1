@@ -133,9 +133,10 @@ static const uint8_t FONT[] = {
     P(0,6),P(0,0),P(3,0),P(4,1),P(4,2),P(3,3),P(0,3),UP,P(2,3),P(4,6),END, P(4,1),P(3,0),P(1,0),P(0,1),P(0,2),P(1,3),P(3,3),P(4,4),P(4,5),P(3,6),P(1,6),P(0,5),END,
     P(0,0),P(4,0),UP,P(2,0),P(2,6),END, P(0,0),P(0,5),P(1,6),P(3,6),P(4,5),P(4,0),END, P(0,0),P(2,6),P(4,0),END,
     P(0,0),P(1,6),P(2,3),P(3,6),P(4,0),END, P(0,0),P(4,6),UP,P(4,0),P(0,6),END, P(0,0),P(2,3),P(4,0),UP,P(2,3),P(2,6),END,
-    P(0,0),P(4,0),P(0,6),P(4,6),END, P(1,0),P(2,0),P(2,1),P(1,1),P(1,0),END
+    P(0,0),P(4,0),P(0,6),P(4,6),END, P(1,0),P(2,0),P(2,1),P(1,1),P(1,0),END,
+    P(0,6),P(4,0),UP,P(0,0),P(1,0),P(1,1),P(0,1),P(0,0),UP,P(3,5),P(4,5),P(4,6),P(3,6),P(3,5),END
 };
-static const char FONT_CH[] = " !'*+-./0123456789:<=>?ABCDEFGHIJKLMNOPQRSTUVWXYZ^";
+static const char FONT_CH[] = " !'*+-./0123456789:<=>?ABCDEFGHIJKLMNOPQRSTUVWXYZ^%";
 static const uint8_t SYM[] = {
     CIR,P(7,7),13, CIR,P(7,7),12, FCIR,P(7,7),4, END,   /* Sun: a ring and its centre */
     ARC,P(8,7),12,8,24, ARC,P(11,7),13,10,22, END,   /* Moon: a crescent (two arcs) */

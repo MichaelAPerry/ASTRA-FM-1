@@ -36,6 +36,8 @@ void app_encoder(unsigned e, int delta);
 void app_key(unsigned k, int down);         /* the 27 keys, F3..G5 */
 void app_midi(unsigned st, unsigned d1, unsigned d2);
 void app_master(unsigned v);                /* the MASTER knob, 0..1023 (the platform applies it: this is for the screen) */
+void app_load(unsigned peak, unsigned mean); /* the audio interrupt's load, per mille of its period: the peak since boot and
+                                               the mean of the last second (the GLO clock page shows them) */
 void app_tick(uint32_t ms);                 /* clocks, sky, program, saves: call it every pass of the main loop */
 void app_draw(uint16_t *fb);                /* the whole screen, GFX_W x GFX_H */
 uint32_t app_leds(void);                    /* button LEDs, bit = button */

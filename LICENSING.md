@@ -21,5 +21,10 @@
 - `tools/site_emu.sh`, `tools/site_front.sh`, `.github/workflows/pages.yml`: adapted from MIKU-FM1 (MIT, same owner).
 - `core/ui/gfx.c`, `core/app/app_draw.c`: the visual style revision was proposed by the owner with Google Gemini
   (2026-11-12) and merged by hand; released under this repository's GPL-3.0 like the rest.
+- `core/chart/chart.c`: the reading text is original wording. The Tarot trump titles it quotes are from Aleister
+  Crowley's *777* (1909), Table VI (the Golden Dawn's attributions): Crowley died in 1947, so his work is public domain in
+  life+70 countries since 2018, and works published before 1931 are public domain in the US. Read from the archive.org
+  transcription "Aleister Crowley - Liber 777" (its tables stated to be facsimiles of 1909). Manly P. Hall: nothing
+  quoted (his works are in copyright in life+70 countries until 2061). Not legal advice.
 - JieLi toolchain and AC79 SDK files (`uboot.boot`, `cfg_tool.bin`, `cfg/eq_cfg_hw.bin`): vendor tools used by Dinghy's build, not part of this repo.
 - Check every new dependency's licence and record it here before use.

@@ -400,6 +400,12 @@ static void horo_natal(void) {
         if (i == A.sel) { gfx_fill_rect(x - 10, 26, 20, 2, WHITE); gfx_fill_rect(x - 10, 64, 20, 2, WHITE); }
     }
     for (i = 0; i < 4u; i++) { chart_read_place(c, A.sel, i, s, 40); if (!i && gfx_text_w(s, 2) <= 236) gfx_text_c(120, 72, s, 2, body_col(A.sel, 255)); else gfx_text_c(120, i ? 78 + 13 * (int)i : 76, s, 1, i == 0u ? body_col(A.sel, 255) : i == 1u ? WHITE : GREY(150)); }
+    /* the Tarot trumps of Crowley's 777 (1909): the body's and its sign's, their titles quoted */
+    gfx_hline(40, 128, 160, ACCENT_COL);
+    chart_read_place(c, A.sel, 4, s, 40); gfx_text_c(120, 136, s, 1, GFX_RGB(249, 199, 79));
+    chart_read_place(c, A.sel, 5, s, 40); if (s[0]) gfx_text_c(120, 152, s, 1, body_col(A.sel, 230));
+    chart_read_place(c, A.sel, 6, s, 40); gfx_text_c(120, 166, s, 1, gfx_hsv(EL_HUE[chart_element(astro_sign(c->lon[A.sel]))], 200, 230));
+    if (!A.has_natal) gfx_text_c(120, 182, "NO BIRTH DATA: THE SKY AS IT IS", 1, GREY(120));
 }
 static void page_horo(void) {
     static const char *const T[4] = {"HOROSCOPE: TRANSITS", "HOROSCOPE: THE MONTH", "HOROSCOPE: BIRTH CHART", "HOROSCOPE: MOON AND SIGNS"}; char s[24]; bar(T[A.sub]);
@@ -420,6 +426,21 @@ static void page_global(void) {
         for (k = 0; k < 12; k++) { int x2, y2; gfx_polar(120, 140, 44, (uint32_t)k * 0x15555555u, &x, &yy); gfx_polar(120, 140, 39, (uint32_t)k * 0x15555555u, &x2, &y2); gfx_line_thick(x, yy, x2, y2, WHITE); }
         gfx_polar(120, 140, 26, 0x40000000u - (h % 12u * 60u + mi) * 5965232u, &x, &yy); gfx_line_thick(120, 140, x, yy, gfx_hsv(h * 10u, 200, 255));
         gfx_polar(120, 140, 38, 0x40000000u - (mi * 60u + sc) * 1193046u, &x, &yy); gfx_line(120, 140, x, yy, gfx_hsv(mi * 4u + 128u, 200, 255));
+        if (A.load_peak) {                                  /* the audio interrupt's load: for the hardware test */
+            /* (per mille to angle with small constants and a shift: a folded constant like -3221225 would read as a ROM
+             * address to Dinghy's build checks) */
+            uint32_t a0 = 0xE0000000u, span = 768u << 22, pk = (A.load_peak * 768u / 1000u) << 22, mn = (A.load_mean * 768u / 1000u) << 22;
+            gfx_col_t c = A.load_peak < 500u ? GFX_RGB(110, 230, 140) : A.load_peak < 700u ? GFX_RGB(250, 210, 80) : GFX_RGB(255, 80, 70);
+            gfx_arc_thick(204, 150, 22, 3, a0 - span, a0, ACCENT_COL);          /* 0 .. 100 % clockwise from lower left */
+            gfx_arc_thick(204, 150, 22, 3, a0 - mn, a0, gfx_dim(c, 150));
+            gfx_arc(204, 150, 25, a0 - pk, a0 - pk + 0x01000000u, c);
+            /* the 50 % mark */
+            gfx_polar(204, 150, 26, a0 - span / 2u, &x, &yy); { int x2, y2; gfx_polar(204, 150, 17, a0 - span / 2u, &x2, &y2); gfx_line(x, yy, x2, y2, WHITE); }
+            p = put(s, "AUDIO "); p = putn(p, A.load_peak / 10u, 1); *p++ = '%'; *p = 0;
+            gfx_text_c(204, 178, s, 1, c);
+            p = put(s, "MEAN "); p = putn(p, A.load_mean / 10u, 1); *p++ = '%'; *p = 0;
+            gfx_text_c(204, 188, s, 1, GREY(130));
+        }
     } else if (A.sub == 1u) {
         p = putn(s, (uint32_t)b->year, 4); *p++ = '-'; p = putn(p, b->month, 2); *p++ = '-'; p = putn(p, b->day, 2); *p = 0;
         gfx_text_c(120, 24, s, 3, b->set ? GFX_RGB(255, 220, 150) : GREY(110));

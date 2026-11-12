@@ -35,6 +35,10 @@ page and installer like MIKU-FM1** (the owner enables Pages through Actions). Th
 revision made with Gemini** (charcoal ground, instrument panels, thick strokes, filled discs): adopted, with its
 bugs fixed (core/ui, core/app/app_draw.c).
 
+Owner, 2026-11-12, later: **4 voices** (D12: 54 % of the audio period accepted; CI ceiling 60 %; the GLO clock page shows
+the interrupt's real load on hardware), and **the readings as recommended** (D14: original wording of the traditional
+significations, plus Crowley quotations only from texts public domain everywhere: the Tarot trump titles of *777*, 1909).
+
 Read as answers to D2, D10 and D11 for now: the musical character is the chart-driven FM engine (docs/ENGINE.md);
 each planet's engine is an operator of a ten-operator voice; the visual style is the line-art pages above. Every
 mapping in docs/ENGINE.md stays the owner's to change.
@@ -48,15 +52,15 @@ mapping in docs/ENGINE.md stays the owner's to change.
 
 | # | Question | Options | Recommendation |
 |---|---|---|---|
-| D12 | Polyphony vs. the interrupt rule. Measured on the FM-1's costs (fm1-live FM1_STRICT): 3 voices × 10 operators = 42 % of the audio period, 4 = 54 %, 5 = 66 % | 3 (the rule: under half) · 4 (more chords, the interrupt over half: less room for USB audio and the screen) | **3, built** (keeps AGENTS.md's rule); 4 is one constant (`FM_NVOICE`) if the owner accepts 54 % |
+| D12 | Polyphony vs. the interrupt rule. Measured on the FM-1's costs (fm1-live FM1_STRICT): 3 voices × 10 operators = 42 % of the audio period, 4 = 54 %, 5 = 66 % | 3 (the rule: under half) · 4 (more chords, the interrupt over half: less room for USB audio and the screen) | **Decided 2026-11-12: 4** (54 %; AGENTS.md's half relaxed by the owner for this; ceiling 60 % in CI; checked on hardware by the GLO load meter) |
 | D13 | The chart-to-sound mapping in docs/ENGINE.md (aspect → wire, placement → timbre, orbit, wheel as stereo field) | as built, or any rule changed | Keep as built until heard on hardware |
-| D14 | Reading text: original one-word keyword rules (no quoted text yet). Crowley / Hall quotations need a public-domain edition checked per D7 | keywords · add verified PD quotations | Keywords for now |
+| D14 | Reading text | **Decided 2026-11-12**: original wording (core/chart/chart.c) + 777's trump titles quoted (Crowley 1909, PD everywhere). Hall: nothing quoted (PD in the US only, not in life+70 countries until 2061) | Done; more Crowley text only from pre-1931 works, each checked |
 | D15 | First release (v0.1) and its attestation through `zvenson/fm1-build` (MIKU's release.yml) | after a first hardware test · now | After a first hardware test |
 | D10 | The per-planet FM engines | Built as one operator per planet (session 3, the owner's brief); details are D13 | Answered 2026-11-12 |
 | D11 | Firmware visual style | Line art, colour on every knob (owner's brief), Gemini revision adopted | Answered 2026-11-12 |
 | D9 | Vertical-slice controls and test tone | Replaced by the instrument (session 3) | Closed |
 
 Engineering choices recorded (reversible, not owner decisions): package identity prefix `FM-1_44` (2026-11-05,
-survey in HANDOFF); settings store magic "ASTR"; 3 voices (D12); 64 preset slots in Dinghy's 8 blobs; the sky-only
+survey in HANDOFF); settings store magic "ASTR"; 64 preset slots in Dinghy's 8 blobs; the sky-only
 chart when no birth data is set; Lahiri ayanamsa for the sidereal zodiac (D4 said: ask when building; Lahiri
 is the common default, one table row to change).

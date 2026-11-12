@@ -94,12 +94,33 @@ int chart_dignity(unsigned body, unsigned sign) {
     return 0;
 }
 
-/* ---- the reading: original keyword rules (traditional significations in one word each). A line is always
- * [what the body stands for] [what the aspect does] [what the other stands for]: nothing that is not in the chart. */
-static const char *const BODY_WORD[ASTRO_NBODY] = {"WILL", "FEELING", "MIND", "AFFECTION", "DRIVE", "GROWTH", "STRUCTURE", "CHANGE", "DREAM", "DEPTH", "PATH"};
-static const char *const ASPECT_VERB[ASTRO_NASPECT] = {"MEETS", "OPENS", "TESTS", "FLOWS WITH", "FACES", "NUDGES", "ADJUSTS", "CHAFES", "STRAINS", "SHAPES", "SHAPES"};
-static const char *const HOUSE_WORD[12] = {"SELF", "MEANS", "WORDS", "HOME", "PLAY", "WORK", "OTHERS", "SHARING", "HORIZONS", "CALLING", "FRIENDS", "SOLITUDE"};
-static const char *const SIGN_WORD[12] = {"BOLD", "STEADY", "CURIOUS", "PROTECTIVE", "PROUD", "PRECISE", "FAIR", "INTENSE", "FREE", "PATIENT", "ORIGINAL", "FLUID"};
+/* ---- the reading: original wording (this project's, quoted from no one) of the traditional significations of the
+ * bodies, signs, aspects and houses. A line is always [what the body stands for] [what the aspect does] [what the other
+ * stands for], [where], [when]: nothing that is not in the chart. Each line fits the screen's 38 characters.
+ * Subjects are singular, so the verbs agree. */
+static const char *const BODY_WORD[ASTRO_NBODY] = {"THE WILL", "FEELING", "THE MIND", "LOVE", "DESIRE", "GROWTH", "DISCIPLINE",
+                                                   "CHANGE", "THE DREAM", "POWER", "THE PATH"};
+static const char *const ASPECT_VERB[ASTRO_NASPECT] = {"MERGES WITH", "OPENS TO", "PRESSES ON", "FLOWS WITH", "PULLS AGAINST",
+                                                       "BRUSHES", "ADJUSTS TO", "FRETS AT", "STRAINS AT", "PLAYS WITH", "PLAYS WITH"};
+static const char *const HOUSE_WORD[12] = {"SELF", "RESOURCES", "WORDS", "HOME", "PLEASURE", "DAILY WORK", "PARTNERS",
+                                           "SHARED THINGS", "HORIZONS", "VOCATION", "FRIENDS", "SECLUSION"};
+static const char *const SIGN_WORD[12] = {"ACTS FIRST", "HOLDS STEADY", "ASKS QUESTIONS", "SHELTERS", "SHINES", "REFINES",
+                                          "SEEKS BALANCE", "GOES DEEP", "AIMS FAR", "BUILDS SLOWLY", "BREAKS PATTERNS",
+                                          "DISSOLVES EDGES"};
+
+/* The Tarot trumps of Crowley's 777 (1909), Table VI (the old Golden Dawn attributions): numeral and title, the title
+ * quoted as printed (its first clause where it has two). Public domain. Read from the archive.org transcription
+ * "Aleister Crowley - Liber 777", whose transcriber states the tables are facsimiles of the 1909 edition; the planets'
+ * rows are named there by their metals. 777 gives no trump to Uranus, Neptune, Pluto or the node: none is shown. */
+static const char *const TRUMP_N[ASTRO_NBODY] = {"XIX", "II", "I", "III", "XVI", "X", "XXI", 0, 0, 0, 0};
+static const char *const TRUMP_T[ASTRO_NBODY] = {"THE LORD OF THE FIRE OF THE WORLD", "THE PRIESTESS OF THE SILVER STAR",
+    "THE MAGUS OF POWER", "THE DAUGHTER OF THE MIGHTY ONES", "THE LORD OF THE HOSTS OF THE MIGHTY",
+    "THE LORD OF THE FORCES OF LIFE", "THE GREAT ONE OF THE NIGHT OF TIME", 0, 0, 0, 0};
+static const char *const TRUMP_SN[12] = {"IV", "V", "VI", "VII", "VIII", "IX", "XI", "XIII", "XIV", "XV", "XVII", "XVIII"};
+static const char *const TRUMP_ST[12] = {"THE SON OF THE MORNING", "THE MAGUS OF THE ETERNAL", "THE CHILDREN OF THE VOICE",
+    "THE CHILD OF THE POWERS OF THE WATERS", "THE DAUGHTER OF THE FLAMING SWORD", "THE PROPHET OF THE ETERNAL",
+    "THE DAUGHTER OF THE LORDS OF TRUTH", "THE CHILD OF THE GREAT TRANSFORMERS", "THE DAUGHTER OF THE RECONCILERS",
+    "THE LORD OF THE GATES OF MATTER", "THE DAUGHTER OF THE FIRMAMENT", "THE RULER OF FLUX AND REFLUX"};
 
 typedef struct { char *p, *end; } wr_t;
 static void wput(wr_t *w, const char *s) { while (*s && w->p < w->end) *w->p++ = *s++; }
@@ -134,11 +155,14 @@ void chart_read_place(const chart_t *c, unsigned body, unsigned line, char *out,
     w.p = out; w.end = out + (n ? n - 1u : 0u);
     switch (line) {
     case 0: wput(&w, chart_body_name[body]); wput(&w, " IN "); wput(&w, chart_sign_name[sg]); break;
-    case 1: wput(&w, BODY_WORD[body]); wput(&w, " IS "); wput(&w, SIGN_WORD[sg]); break;
+    case 1: wput(&w, BODY_WORD[body]); wput(&w, " "); wput(&w, SIGN_WORD[sg]); break;
     case 2: wput(&w, c->solar ? "SOLAR HOUSE " : "HOUSE "); wput_n(&w, c->house[body] + 1u); wput(&w, " "); wput(&w, HOUSE_WORD[c->house[body]]); break;
+    case 4: wput(&w, "777: "); wput(&w, TRUMP_N[body] ? TRUMP_N[body] : "NONE"); wput(&w, " IN "); wput(&w, TRUMP_SN[sg]); break;
+    case 5: if (TRUMP_T[body]) wput(&w, TRUMP_T[body]); break;
+    case 6: wput(&w, TRUMP_ST[sg]); break;
     default:
-        wput(&w, dg == 2 ? "AT HOME: STRONG" : dg == 1 ? "EXALTED: HONOURED" : dg == -1 ? "IN FALL: HUMBLED" : dg == -2 ? "IN DETRIMENT: STRAINED" : "");
-        if (c->sky.spd[body] < 0 && body != ASTRO_NODE) wput(&w, dg ? " RETROGRADE" : "RETROGRADE: TURNED INWARD");
+        wput(&w, dg == 2 ? "IN ITS OWN SIGN: AT EASE" : dg == 1 ? "EXALTED: AT ITS BEST" : dg == -1 ? "IN FALL: AT A LOSS" : dg == -2 ? "IN DETRIMENT: ILL AT EASE" : "");
+        if (c->sky.spd[body] < 0 && body != ASTRO_NODE) wput(&w, dg ? ", RETRO" : "RETROGRADE: TURNED INWARD");
     }
     if (n) *w.p = 0;
 }

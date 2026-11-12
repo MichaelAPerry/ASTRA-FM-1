@@ -61,6 +61,8 @@ int chart_dignity(unsigned body, unsigned sign);   /* +2 domicile, +1 exaltation
  *   2 where ("FROM WORK TO HOME")       3 when ("APPLYING 1D12 EXACT IN 9 DAYS")
  * Each fits n characters. */
 void chart_read_transit(const chart_t *sky, const chart_t *natal, const chart_asp_t *a, unsigned line, char *out, unsigned n);
-/* a placement of the birth chart: 0 "MOON IN SCORPIO"  1 "FEELING IS INTENSE"  2 "HOUSE 4 HOME"  3 dignity or motion */
+/* a placement of the birth chart: 0 "MOON IN SCORPIO"  1 "FEELING GOES DEEP"  2 "HOUSE 4 HOME"  3 dignity or motion;
+ * 4 "777: II IN XIII" (the Tarot trumps of Crowley's 777, 1909)  5 the body's trump title  6 the sign's, quoted (empty when
+ * 777 gives none) */
 void chart_read_place(const chart_t *c, unsigned body, unsigned line, char *out, unsigned n);
 #endif

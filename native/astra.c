@@ -85,7 +85,7 @@ static void frame_send(void)                    /* the next run of changed rows,
 
 static void app_main(void)
 {
-    uint32_t keys_was = 0, leds_was = ~0u, kleds_was = ~0u, i;
+    uint32_t keys_was = 0, leds_was = ~0u, kleds_was = ~0u, i, load_ms = 0, load_sum = 0, load_n = 0, load_mean = 0;
     fm_init();
     app_init(&STORE, fm1_ms);
     send_y = GFX_H;
@@ -109,6 +109,12 @@ static void app_main(void)
         keys_was = keys;
         while (midi_get(&st, &d1, &d2)) app_midi(st, d1, d2);
         app_master(astro_isqrt((uint32_t)master_q12 << 8));
+        if (fm1_ms - load_ms >= 1000u) {       /* the load meter: the peak since boot, the mean of the last second */
+            uint32_t s = isr_sum, n = isr_n;
+            load_mean = n != load_n ? (s - load_sum) / (n - load_n) : 0u;
+            load_sum = s; load_n = n; load_ms = fm1_ms;
+            app_load(isr_max * 10u / (5805u * FM1_TICKS_PER_US / 100u), load_mean * 10u / (5805u * FM1_TICKS_PER_US / 100u));
+        }
         app_tick(fm1_ms);
         /* LEDs, only what changed */
         l = app_leds();

@@ -10,7 +10,7 @@ AGENTS.md. Nothing here is Hardware-tested.
 | Sky | `core/astro/astro.c`, `sky.c` | Sun, Moon, Mercury–Pluto, mean node; obliquity, sidereal time, ASC/MC, 7 house systems, aspects | Host-tested (docs/ACCURACY.md), Emulator-tested (bit-exact) |
 | Charts | `core/chart/chart.c` | casting (tropical / sidereal Lahiri), birth data, harmonic aspects, dignities, the reading rules | Host-tested |
 | Patch | `core/synth/patch.c` | chart → patch (`patch_cast`), patch + charts → engine program (`patch_derive`) | Host-tested |
-| Engine | `core/fm/fm.c` | 3 voices × 10 operators, any routing, envelopes, LFO, chorus, echo, reverb | Host-tested, Emulator-tested |
+| Engine | `core/fm/fm.c` | 4 voices × 10 operators, any routing, envelopes, LFO, chorus, echo, reverb | Host-tested, Emulator-tested |
 | Instrument | `core/app/`, `core/ui/` | panel, clocks, sky clock, 64 presets, seven pages of line art | Host-tested, Emulator-tested |
 | Glue | `native/astra.c` | Dinghy app: interrupt, panel, MIDI, screen diff, flash | Emulator-tested |
 
@@ -82,16 +82,20 @@ reloads them: a third slower, measured).
 |---|---|
 | 0 (effects and platform only) | 361 µs (6 %); the reverb is 120 µs of it |
 | 1 | 1,061 µs (18 %) |
-| 3 (the build) | mean 2,293 µs, max 2,451 µs (42 %), whole firmware |
-| 4 | 3,157 µs (54 %) |
+| 3 | mean 2,293 µs, max 2,451 µs (42 %), whole firmware |
+| 4 (the build) | mean 2,938 µs, max 3,150 µs (54 %), whole firmware |
 | 5 | 3,857 µs (66 %) |
 
-AGENTS.md keeps the interrupt under half its period, so the build has 3 voices (30 operators every sample). Four
-would fit the period but not the rule: an owner decision (DECISIONS D12). Tried and measured: folding the mix into
+AGENTS.md keeps the interrupt under half its period; the owner chose 4 voices at 54 % (DECISIONS D12, 2026-11-12):
+40 operators every sample. CI fails above 60 %. Why there is a margin at all: the cost model leaves out load-use
+stalls, and this loop loads a value and uses it at once dozens of times a sample, so the FM-1 may be slower than
+measured; the 10 kHz timer interrupt (keys, USB audio) runs inside the audio interrupt's time; and the screen and
+the sky are computed in what is left. The GLO clock page shows the interrupt's peak and mean load, measured by the
+firmware itself: the first hardware session reads the real figure there. Tried and measured: folding the mix into
 the operator (slower: the compiler spills), and the plain loop over operators (slower: a taken branch costs five loads).
 
 The screen: a full frame is drawn into a 240 × 240 buffer in the pool and only the rows that changed go out by DMA
-while the main loop runs on (`native/astra.c`). With three voices sounding the main loop still draws ~13 frames a
+while the main loop runs on (`native/astra.c`). With four voices sounding the main loop still draws ~12 frames a
 second on the FM-1's costs.
 
 ## Tests

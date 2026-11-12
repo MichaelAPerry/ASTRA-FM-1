@@ -20,8 +20,8 @@
 
 #define FM_NOP 10u                  /* operators a voice */
 #ifndef FM_NVOICE
-#define FM_NVOICE 3u                /* voices: the most that keep the audio interrupt under half its period on the
-                                       FM-1's measured costs (3: 42 %, 4: 54 %, 5: 66 %; docs/ENGINE.md) */
+#define FM_NVOICE 4u                /* voices: 4 = 54 % of the audio period on the FM-1's measured costs (3: 42 %,
+                                       5: 66 %); the owner's call (DECISIONS D12), checked on hardware with the GLO load meter */
 #endif
 #define FM_SUB 32u                  /* frames per control step: envelopes, smoothing, LFO */
 #define FM_FS 44100u

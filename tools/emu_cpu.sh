@@ -3,7 +3,8 @@
 # The audio interrupt's cost on the FM-1, measured: the real package in fm1-live with FM1_STRICT=1 (each instruction
 # costs the cycles harbor's probes measured on a real FM-1, flash-cache misses included), five notes held (every voice
 # sounding) on a cast patch with every effect on. The firmware times its own interrupt with the 24 MHz counter (native/astra.c
-# app_audio) and the result is read from astra_probe in a RAM dump. Fails above half the 5.8 ms period (AGENTS.md).
+# app_audio) and the result is read from astra_probe in a RAM dump. Fails above 60 % of the 5.8 ms period: the owner
+# chose 4 voices at 54 % over AGENTS.md's half (DECISIONS D12, 2026-11-12); the GLO page's meter checks it on hardware.
 #   tools/emu_cpu.sh PACKAGE.fwsc PROBE.txt OUT_DIR FM1_LIVE_BIN
 set -eu
 U="usage: tools/emu_cpu.sh PACKAGE.fwsc PROBE.txt OUT_DIR FM1_LIVE_BIN"
@@ -22,5 +23,5 @@ voices, isr_max, isr_mean, frames, rows = w[30:35]
 print(f"emu_cpu: FM-1 costs (FM1_STRICT): {voices} voices, audio interrupt mean {isr_mean} us, max {isr_max} us of 5805 "
       f"({isr_max / 58.05:.0f} %); main loop drew {frames} frames, sent {rows} rows")
 assert voices >= 3, f"five notes held, {voices} voices"
-assert isr_max < 2903, "the audio interrupt takes more than half its period"
+assert isr_max < 3483, "the audio interrupt takes more than 60 % of its period (the owner's ceiling, DECISIONS D12)"
 PY
