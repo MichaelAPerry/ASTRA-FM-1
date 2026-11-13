@@ -43,6 +43,9 @@ Read as answers to D2, D10 and D11 for now: the musical character is the chart-d
 each planet's engine is an operator of a ten-operator voice; the visual style is the line-art pages above. Every
 mapping in docs/ENGINE.md stays the owner's to change.
 
+Owner, 2026-11-13: **ASTRA was tested on a physical FM-1 and works** (owner's report). D15's condition is met; the
+first release waits for the owner's go-ahead to push a tag.
+
 ## Open
 
 - D2 (musical character): answered for now by the session-3 brief (above). New questions go below.

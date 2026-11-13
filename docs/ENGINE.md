@@ -1,7 +1,8 @@
 # The engine: the chart as an FM synthesizer
 
 How ASTRA turns a sky into sound, what it costs on the FM-1, and where each rule lives in the code. Status words as in
-AGENTS.md. Nothing here is Hardware-tested.
+AGENTS.md. The firmware is Hardware-tested (owner's report, 2026-11-13: it installs and works); the interrupt costs below
+are still the emulator's measurements until the GLO page's load meter is read on hardware.
 
 ## Layers (all in `core/`, integer only, the same sources the host tests build)
 

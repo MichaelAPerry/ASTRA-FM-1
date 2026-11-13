@@ -1,4 +1,4 @@
-# Handoff (2026-11-12, session 3: the instrument — Emulator-tested; site Published, nothing Hardware-tested)
+# Handoff (2026-11-12, session 3: the instrument — Emulator-tested; site Published, Hardware-tested by the owner 2026-11-13)
 
 ## Where things stand
 
@@ -9,11 +9,11 @@
 | Chart → synthesis `core/synth/patch.c`: aspects are the algorithm (37: FREE, BIRTH/SKY/TRANSIT × harmonics 1–12), placements are the timbre, orbit, wheel as stereo field | Host-tested; mapping in docs/ENGINE.md; owner's to change (D13) |
 | Horoscope `core/chart`: natal chart from birth data (date, time or unknown, zone, place), transits closest first with applying/separating and days to exact, the month around (±30 days), placements with dignity and retrograde, Moon phase, keyword readings naming their source | Host-tested |
 | Instrument `core/app` + `core/ui`: seven pages of line art (Gemini's visual revision adopted and fixed), clocks (D5 states), sky clock (warp ±5 years/s), 64 presets (cast from the chart until saved), latch, octave, mute, USB and TRS MIDI | Host-tested (252 knob turns, each changes a colour); Emulator-tested |
-| Firmware `native/astra.c` on Dinghy f77bf03 | Builds (image 83,824 B of 581,564; RAM 62,780 of 98,304; pool 250,368 of 344,064); Emulator-tested. **Not Hardware-tested** |
+| Firmware `native/astra.c` on Dinghy f77bf03 | Builds (image 83,824 B of 581,564; RAM 62,780 of 98,304; pool 250,368 of 344,064); Emulator-tested. **Hardware-tested: owner's report, 2026-11-13 (installs and works; details not recorded here)** |
 | `tools/emu_smoke.sh` (CI): controls, state, astronomy bit for bit, silence then the key's pitch, screens, a dial's colour | Passing locally on the real package (fm1-emu 9de1ef0) |
 | `tools/emu_cpu.sh` (CI): interrupt on fm1-live FM1_STRICT, under 60 % | Passing locally (54 %) |
 | Site `site/` + `tools/site_emu.sh`, `site_front.sh`, `site_shots.sh`, `.github/workflows/pages.yml` (MIKU's pipeline: the page installs exactly what its emulator runs; identity asserted `FM-1_44`) | **Published**: Pages runs 43322931207 (ec95b2b) and 43325598056 (1dc46b6, 4 voices) green and looked at: https://michaelaperry.github.io/ASTRA-FM-1/ serves the package (SHA-256 matches), the installer reports `FM-1_44000000` ready, the emulator boots ASTRA in Chromium. Each later Pages run to be looked at |
-| Release / attestation (`release.yml`, `zvenson/fm1-build`) | Not started (D15: after a first hardware test) |
+| Release / attestation (`release.yml`, `zvenson/fm1-build`) + Firmware Hub (`fmhub.json`, `docs/card.png`) | Implemented (after MIKU's release.yml); not yet run: no tag pushed. D15's condition (a first hardware test) is met |
 | Companion chart in the browser (WASM core, D6) | Not started |
 
 ### Session 3 notes

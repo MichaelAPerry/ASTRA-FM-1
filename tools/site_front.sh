@@ -26,7 +26,7 @@ if kind == "release":
              f'<a href="{repo}/attestations">attestations</a>.')
 else:
     build = (f'Development build of <a href="{repo}/commit/{html.escape(commit)}">{html.escape(commit[:7])}</a> '
-             f'on main: <strong>not attested</strong>. No release has been made yet: the first one follows the first hardware test. '
+             f'on main: <strong>not attested</strong>. No release has been made yet. '
              f'Until then this development build is what the page installs, and what the emulator above runs.')
 product = "".join(chr((raw[i * 0x30 + 0x2F] - i - 1) & 0xFF) for i in range(20) if raw[i * 0x30 + 0x2F] != 0x7D)
 assert product.startswith("FM-1_44"), product

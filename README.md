@@ -15,7 +15,7 @@ Play it in your browser on the [ASTRA website](https://michaelaperry.github.io/A
 ## Status
 
 *   **Emulator-tested**: the real firmware runs in [fm1-emu](https://github.com/joakimeriksson/fm1-emu) in automated tests.
-*   **Not yet tested on a physical FM-1.** This is an early development build. Install it only if you are comfortable with the USB rescue (hold OCT- while switching on).
+*   **Tested on a physical FM-1**: it installs and works. It's still an early build, so know the USB rescue before you install (hold OCT- while switching on).
 *   ASTRA FM-1 is a working title.
 
 ## What's inside
