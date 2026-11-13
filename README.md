@@ -6,6 +6,8 @@ ASTRA runs on the FM-1 itself. It calculates the positions of the Sun, Moon, and
 
 FM (frequency modulation) means one tone wobbles the pitch of another so fast that you hear a new, richer tone. Each tone is called an operator. ASTRA has ten, one per body from the Sun to Pluto, and the aspects between the planets decide which operator bends which. A trine is a smooth bend, a square a metallic ring, an opposition a loop.
 
+*As far as we know, ASTRA is the first playable instrument built on personal astrology: it casts your birth chart on the device, and the aspects between the sky and your chart wire its FM engine.* Related work: the music of the spheres (Pythagoras, Kepler's *Harmonices Mundi*, 1619), Willie Ruff and John Rodgers's *The Harmony of the World* (1979), and Martin Hollingham's [Music of the Spheres](https://github.com/newbroman/Music_of_the_Spheres), which sounds today's sky in the browser.
+
 ## Try it
 
 Play it in your browser on the [ASTRA website](https://michaelaperry.github.io/ASTRA-FM-1/). The site runs the real firmware in an emulator, so you can try it before installing (it needs a fast computer). The installer is on the same site. New to it? [Start here](docs/QUICKSTART.md): five minutes. [The full guide](docs/GUIDE.md) explains every button and knob, the astrology behind the readings, and how to shape the sound.
