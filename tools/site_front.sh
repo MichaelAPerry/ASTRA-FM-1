@@ -1,8 +1,9 @@
 #!/bin/sh
 # SPDX-License-Identifier: GPL-3.0-only
 # Adapted from MIKU-FM1 tools/site_front.sh (MIT, same owner).
-# Install the front page (site/index.html), the installer page (site/install.html) and their assets (site.css, js/,
-# media/) into SITE, filling in the version, the build kind and the commit, the SHA-256 and the identity of the package.
+# Install the front page (site/index.html), the installer page (site/install.html), the guides (docs/QUICKSTART.md,
+# docs/GUIDE.md, rendered by tools/md_page.py) and their assets (site.css, js/, media/) into SITE, filling in the version,
+# the build kind and the commit, the SHA-256 and the identity of the package.
 # The identity is decoded from the package bytes and must be ASTRA's (FM-1_44...): the installer refuses anything else.
 # release: the attested package of a published release. dev: built by the Pages workflow from a commit of main (not attested).
 #   tools/site_front.sh SITE_DIR VERSION [release|dev] [COMMIT]
@@ -13,7 +14,7 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 PKG="astra-$V.fwsc"
 [ -f "$SITE/firmware/$PKG" ] || { echo "site_front.sh: no $SITE/firmware/$PKG"; exit 1; }
 python3 - "$ROOT" "$SITE" "$V" "$PKG" "$KIND" "$COMMIT" <<'PY'
-import hashlib, html, json, shutil, sys
+import hashlib, html, json, shutil, subprocess, sys
 from pathlib import Path
 root, site, v, pkg, kind, commit = Path(sys.argv[1]), Path(sys.argv[2]), *sys.argv[3:7]
 repo = "https://github.com/MichaelAPerry/ASTRA-FM-1"
@@ -43,6 +44,8 @@ for name, keys in (("index.html", ("{{VERSION}}", "{{PACKAGE}}", "{{SHA256}}", "
         page = page.replace(k, fill[k])
     assert "{{" not in page and "/*META*/" not in page, name
     (site / name).write_text(page)
+for md, out, title in (("docs/QUICKSTART.md", "start.html", "Start here · ASTRA FM-1"), ("docs/GUIDE.md", "guide.html", "The ASTRA guide · ASTRA FM-1")):
+    subprocess.run([sys.executable, str(root / "tools" / "md_page.py"), str(root / md), str(site / out), title], check=True)
 (site / ".nojekyll").touch()
 print(f"site_front: identity {product}, SHA-256 {sha}")
 PY

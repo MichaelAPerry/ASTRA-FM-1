@@ -51,6 +51,14 @@
    Chrome/Edge, resumes a cut-off install, returns to official V15 from the user's own file.
 6. Release (`release.yml` with `zvenson/fm1-build@v1`, attestations, Firmware Hub listing): not yet (D15).
 
+### Docs pass (2026-11-12, branch docs/human-guide)
+- New `docs/GUIDE.md`: the user guide (buttons' new jobs, the four knobs page by page, the screen and lights, a first
+  session, reading the horoscope, where the sound comes from, time). README and the site's words rewritten to match;
+  the site's Controls section now carries the guide's two tables and links the guide (GitHub URL on main).
+- `docs/QUICKSTART.md` (five minutes) and `docs/GUIDE.md` are the only sources: `tools/md_page.py` renders them into
+  the site as start.html and guide.html at build (site_front.sh). Not yet run in a Pages build: look at the first one.
+- Keep the guides, the site's Controls tables and core/app's PARS table in step when a control changes.
+
 ## Next steps (in order)
 
 1. Look at each push's CI runs (host, device incl. emu_cpu, Pages) before calling a change Emulator-tested or Published.
